@@ -76,7 +76,9 @@ jobs:
           key: node-dependencies-${{ hashFiles('yarn.lock') }}
       - name: Run tests
         run: |
+          sudo apt-get update
           sudo apt-get -y install libmms0
+          sudo apt-get -y install ca-certificates
           wget https://mediaarea.net/download/binary/libzen0/0.4.39/libzen0v5_0.4.39-1_amd64.xUbuntu_20.04.deb
           sudo dpkg -i libzen0v5_0.4.39-1_amd64.xUbuntu_20.04.deb
           wget https://mediaarea.net/download/binary/libmediainfo0/22.09/libmediainfo0v5_22.09-1_amd64.xUbuntu_20.04.deb
@@ -104,6 +106,7 @@ jobs:
           key: node-dependencies-${{ hashFiles('yarn.lock') }}
       - name: Run tests
         run: |
+          sudo apt-get update
           sudo apt-get -y install libmms0
           wget https://mediaarea.net/download/binary/libzen0/0.4.39/libzen0v5_0.4.39-1_amd64.xUbuntu_22.04.deb
           sudo dpkg -i libzen0v5_0.4.39-1_amd64.xUbuntu_22.04.deb
