@@ -31,6 +31,7 @@ import net.pms.io.OutputParams;
 import net.pms.io.OutputTextLogger;
 import net.pms.io.ProcessWrapper;
 import net.pms.io.ProcessWrapperImpl;
+import net.pms.parsers.FFmpegParser;
 import net.pms.platform.PlatformUtils;
 import net.pms.renderers.OutputOverride;
 import net.pms.renderers.Renderer;
@@ -328,7 +329,7 @@ public class FFmpegWebVideo extends FFMpegVideo {
 			@Override
 			public boolean filter(String line) {
 				if (END_OF_HEADER.reset(line).find()) {
-					dlna.getMedia().parseFFmpegInfo(lines, input);
+					FFmpegParser.parse(dlna.getMedia(), lines, input);
 					LOGGER.trace("[{}] parsed media from headers: {}", ID, dlna.getMedia());
 					dlna.getParent().updateChild(dlna);
 					return false; // done, stop filtering

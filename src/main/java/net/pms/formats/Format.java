@@ -22,6 +22,7 @@ import net.pms.dlna.DLNAMediaInfo;
 import net.pms.dlna.DLNAResource;
 import net.pms.dlna.InputFile;
 import net.pms.network.HTTPResource;
+import net.pms.parsers.MediaParser;
 import net.pms.renderers.Renderer;
 import net.pms.util.FileUtil;
 import net.pms.util.StringUtil;
@@ -288,7 +289,7 @@ public abstract class Format implements Cloneable {
 	 */
 	public void parse(DLNAMediaInfo media, InputFile file, int type, Renderer renderer) {
 		if (renderer != null && renderer.isUseMediaInfo()) {
-			renderer.getFormatConfiguration().parse(media, file, this, type, renderer);
+			MediaParser.parse(media, file, this, type, renderer);
 		} else {
 			media.parse(file, this, type, false, false, renderer);
 		}

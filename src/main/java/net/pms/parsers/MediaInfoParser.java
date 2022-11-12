@@ -679,7 +679,7 @@ public class MediaInfoParser {
 		}
 	}
 
-	public static void addAudio(DLNAMediaAudio currentAudioTrack, DLNAMediaInfo media) {
+	private static void addAudio(DLNAMediaAudio currentAudioTrack, DLNAMediaInfo media) {
 		if (isBlank(currentAudioTrack.getLang())) {
 			currentAudioTrack.setLang(DLNAMediaLang.UND);
 		}
@@ -691,7 +691,7 @@ public class MediaInfoParser {
 		media.getAudioTracksList().add(currentAudioTrack);
 	}
 
-	public static void addSub(DLNAMediaSubtitle currentSubTrack, DLNAMediaInfo media) {
+	private static void addSub(DLNAMediaSubtitle currentSubTrack, DLNAMediaInfo media) {
 		if (currentSubTrack.getType() == SubtitleType.UNSUPPORTED) {
 			return;
 		}
@@ -1079,7 +1079,7 @@ public class MediaInfoParser {
 		}
 	}
 
-	public static int getPixelValue(String value) {
+	private static int getPixelValue(String value) {
 		if (isBlank(value)) {
 			return 0;
 		}
@@ -1107,7 +1107,7 @@ public class MediaInfoParser {
 	 * @param value {@code Format_Settings_RefFrames/String} value to parse.
 	 * @return reference frame count or {@code -1} if could not parse.
 	 */
-	public static byte getReferenceFrameCount(String value) {
+	protected static byte getReferenceFrameCount(String value) {
 		if (isBlank(value)) {
 			return -1;
 		}
@@ -1127,7 +1127,7 @@ public class MediaInfoParser {
 	 * @param value {@code Format_Profile} value to parse.
 	 * @return AVC level or {@code null} if could not parse.
 	 */
-	public static String getAvcLevel(String value) {
+	protected static String getAvcLevel(String value) {
 		// Example values:
 		// High@L3.0
 		// High@L4.0
@@ -1140,7 +1140,7 @@ public class MediaInfoParser {
 		return null;
 	}
 
-	public static String getAvcProfile(String value) {
+	protected static String getAvcProfile(String value) {
 		String profile = substringBefore(lowerCase(value), "@l");
 		if (isNotBlank(profile)) {
 			return profile;
@@ -1149,20 +1149,7 @@ public class MediaInfoParser {
 		return null;
 	}
 
-	public static int getVideoBitrate(String value) {
-		if (isBlank(value)) {
-			return 0;
-		}
-
-		try {
-			return Integer.parseInt(value);
-		} catch (NumberFormatException e) {
-			LOGGER.trace("Could not parse video bitrate \"{}\": ", value, e.getMessage());
-			return 0;
-		}
-	}
-
-	public static int getBitrate(String value) {
+	protected static int getBitrate(String value) {
 		if (value.isEmpty()) {
 			return 0;
 		}
@@ -1179,7 +1166,7 @@ public class MediaInfoParser {
 		}
 	}
 
-	public static int getSpecificID(String value) {
+	protected static int getSpecificID(String value) {
 		// If ID is given as 'streamID-substreamID' use the second (which is hopefully unique).
 		// For example in vob audio ID can be '189 (0xBD)-32 (0x80)' and text ID '189 (0xBD)-128 (0x20)'
 		int end = value.lastIndexOf("(0x");
@@ -1192,7 +1179,7 @@ public class MediaInfoParser {
 		return Integer.parseInt(value);
 	}
 
-	public static String getSampleFrequency(String value) {
+	protected static String getSampleFrequency(String value) {
 		/**
 		 * Some tracks show several values, e.g. "48000 / 48000 / 24000" for HE-AAC
 		 * We store only the first value
@@ -1209,7 +1196,7 @@ public class MediaInfoParser {
 		return value;
 	}
 
-	public static String getFPSValue(String value) {
+	protected static String getFPSValue(String value) {
 		if (value.contains("fps")) {
 			value = value.substring(0, value.indexOf("fps"));
 		}
@@ -1218,7 +1205,7 @@ public class MediaInfoParser {
 		return value;
 	}
 
-	public static String getFrameRateModeValue(String value) {
+	protected static String getFrameRateModeValue(String value) {
 		if (value.indexOf('/') > -1) {
 			value = value.substring(0, value.indexOf('/'));
 		}
@@ -1227,7 +1214,7 @@ public class MediaInfoParser {
 		return value;
 	}
 
-	public static String getLang(String value) {
+	protected static String getLang(String value) {
 		if (value.indexOf('(') > -1) {
 			value = value.substring(0, value.indexOf('('));
 		}
@@ -1263,7 +1250,7 @@ public class MediaInfoParser {
 		}
 	}
 
-	protected static class ParseLogger {
+	private static class ParseLogger {
 
 		private final StringBuilder sb = new StringBuilder();
 		private final Columns generalColumns = new Columns(false, 2, 32, 62, 92);
