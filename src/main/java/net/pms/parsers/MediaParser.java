@@ -56,6 +56,10 @@ public class MediaParser {
 					LOGGER.trace("", e);
 				}
 			}
+			if (ext.getIdentifier() == Format.Identifier.RAW) {
+				RawImageParser.parse(media, file, type);
+				return;
+			}
 
 			// MediaInfo can't correctly parse ADPCM, DFF, DSF or PNM
 			if (
@@ -65,12 +69,12 @@ public class MediaParser {
 				ext.getIdentifier() != Format.Identifier.DSF &&
 				ext.getIdentifier() != Format.Identifier.PNM
 			) {
-				MediaInfoParser.parse(media, file, type, renderer);
+				MediaInfoParser.parse(media, file, type);
 			} else {
-				media.parse(file, ext, type, false, false, renderer);
+				media.parse(file, ext, type, false, false);
 			}
 		} else {
-			media.parse(file, ext, type, false, false, renderer);
+			media.parse(file, ext, type, false, false);
 		}
 	}
 

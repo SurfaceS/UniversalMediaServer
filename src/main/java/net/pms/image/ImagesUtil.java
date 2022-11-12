@@ -422,7 +422,7 @@ public class ImagesUtil {
 	 * @param scaleHeight the height to scale to.
 	 * @return A {@link Dimension} with the resulting resolution.
 	 */
-	public static Dimension calculateScaledResolution(
+	private static Dimension calculateScaledResolution(
 		int actualWidth,
 		int actualHeight,
 		ScaleType scaleType,
@@ -462,7 +462,7 @@ public class ImagesUtil {
 	 * @param inputStream the {@link ByteArrayInputStream} whose buffer to retrieve.
 	 * @return The byte array or {@code null} if retrieval failed.
 	 */
-	public static byte[] retrieveByteArray(ByteArrayInputStream inputStream) {
+	private static byte[] retrieveByteArray(ByteArrayInputStream inputStream) {
 		Field f;
 		try {
 			f = ByteArrayInputStream.class.getDeclaredField("buf");
@@ -487,7 +487,7 @@ public class ImagesUtil {
 	 * @return The resulting byte array.
 	 * @throws IOException if an I/O error occurs
 	 */
-	public static byte[] toByteArray(InputStream inputStream) throws IOException {
+	private static byte[] toByteArray(InputStream inputStream) throws IOException {
 		if (inputStream == null) {
 			return IOUtils.EMPTY_BYTE_ARRAY;
 		}
@@ -1244,7 +1244,7 @@ public class ImagesUtil {
 	 *         is {@code null}.
 	 * @throws IOException if the operation fails.
 	 */
-	protected static Image transcodeImage(
+	private static Image transcodeImage(
 		byte[] inputByteArray,
 		Image inputImage,
 		InputStream inputStream,
@@ -1312,7 +1312,7 @@ public class ImagesUtil {
 		if (inputImage != null) {
 			inputByteArray = inputImage.getBytes(false);
 		} else if (inputStream != null) {
-			inputByteArray = ImagesUtil.toByteArray(inputStream);
+			inputByteArray = toByteArray(inputStream);
 		}
 
 		// outputProfile overrides outputFormat

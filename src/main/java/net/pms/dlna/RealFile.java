@@ -32,6 +32,7 @@ import net.pms.database.MediaTableCoverArtArchive;
 import net.pms.database.MediaTableFiles;
 import net.pms.formats.Format;
 import net.pms.formats.FormatFactory;
+import net.pms.parsers.MediaParser;
 import net.pms.platform.PlatformUtils;
 import net.pms.util.FileUtil;
 import net.pms.util.ProcessUtil;
@@ -115,7 +116,7 @@ public class RealFile extends VirtualFile {
 					InputFile inputfile = new InputFile();
 					inputfile.setFile(file);
 					getMedia().setContainer(null);
-					getMedia().parse(inputfile, getFormat(), getType(), false, false, null);
+					getMedia().parse(inputfile, getFormat(), getType(), false, false);
 					if (getMedia().getContainer() == null) {
 						valid = false;
 						LOGGER.info("The file {} could not be parsed. It will be hidden", file.getAbsolutePath());
@@ -259,10 +260,10 @@ public class RealFile extends VirtualFile {
 					}
 
 					if (getFormat() != null) {
-						getFormat().parse(getMedia(), input, getType(), getParent().getDefaultRenderer());
+						MediaParser.parse(getMedia(), input, getFormat(), getType(), getParent().getDefaultRenderer());
 					} else {
 						// Don't think that will ever happen
-						getMedia().parse(input, getFormat(), getType(), false, isResume(), getParent().getDefaultRenderer());
+						getMedia().parse(input, getFormat(), getType(), false, isResume());
 					}
 
 					if (connection != null && getMedia().isMediaparsed() && !getMedia().isParsing() && isAddToMediaLibrary()) {

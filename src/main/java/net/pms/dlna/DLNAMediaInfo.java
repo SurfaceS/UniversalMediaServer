@@ -408,7 +408,7 @@ public class DLNAMediaInfo implements Cloneable {
 			forThumbnail.durationSec /= 2;
 		}
 
-		forThumbnail.parse(input, ext, type, true, resume, renderer);
+		forThumbnail.parse(input, ext, type, true, resume);
 		thumb = forThumbnail.thumb;
 		thumbready = true;
 	}
@@ -559,7 +559,7 @@ public class DLNAMediaInfo implements Cloneable {
 	/**
 	 * Parse media without using MediaInfo.
 	 */
-	public void parse(InputFile inputFile, Format ext, int type, boolean thumbOnly, boolean resume, Renderer renderer) {
+	public void parse(InputFile inputFile, Format ext, int type, boolean thumbOnly, boolean resume) {
 		int i = 0;
 
 		while (isParsing()) {

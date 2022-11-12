@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import net.pms.formats.Format;
+import net.pms.parsers.MediaParser;
 import net.pms.util.FileUtil;
 import net.sf.sevenzipjbinding.IInArchive;
 import net.sf.sevenzipjbinding.SevenZip;
@@ -148,26 +149,15 @@ public class SevenZipEntry extends DLNAResource implements IPushOutput {
 		if (getFormat() == null || !getFormat().isVideo()) {
 			return;
 		}
-
-		// TODO: found seems not used here
-		boolean found = false;
-
-		if (!found) {
-			if (getMedia() == null) {
-				setMedia(new DLNAMediaInfo());
-			}
-
-			found = !getMedia().isMediaparsed() && !getMedia().isParsing();
-
-			if (getFormat() != null) {
-				InputFile input = new InputFile();
-				input.setPush(this);
-				input.setSize(length());
-				getFormat().parse(getMedia(), input, getType(), null);
-				if (getMedia() != null && getMedia().isSLS()) {
-					setFormat(getMedia().getAudioVariantFormat());
-				}
-			}
+		if (getMedia() == null) {
+			setMedia(new DLNAMediaInfo());
+		}
+		InputFile input = new InputFile();
+		input.setPush(this);
+		input.setSize(length());
+		MediaParser.parse(getMedia(), input, getFormat(), getType(), null);
+		if (getMedia().isSLS()) {
+			setFormat(getMedia().getAudioVariantFormat());
 		}
 
 		super.resolve();
