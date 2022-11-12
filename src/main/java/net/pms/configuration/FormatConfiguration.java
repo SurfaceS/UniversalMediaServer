@@ -758,7 +758,7 @@ public class FormatConfiguration {
 		return getMatchedMIMEtype(
 			media.getContainer(),
 			media.getCodecV(),
-			params.getAid() != null ? params.getAid().getCodecA() : null,
+			params.getMediaAudio() != null ? params.getMediaAudio().getCodecA() : null,
 			0,
 			0,
 			0,
@@ -767,8 +767,8 @@ public class FormatConfiguration {
 			0,
 			media.getVideoBitDepth(),
 			null,
-			params.getSid().getType().name(),
-			params.getSid().isExternal(),
+			params.getMediaSubtitle().getType().name(),
+			params.getMediaSubtitle().isExternal(),
 			null
 		);
 	}

@@ -175,8 +175,8 @@ public class FFMpegVideo extends Engine {
 			boolean isSubsManualTiming = true;
 			DLNAMediaSubtitle convertedSubs = dlna.getMediaSubtitle();
 			StringBuilder subsFilter = new StringBuilder();
-			if (params.getSid() != null && params.getSid().getType().isText()) {
-				boolean isSubsASS = params.getSid().getType() == SubtitleType.ASS;
+			if (params.getMediaSubtitle() != null && params.getMediaSubtitle().getType().isText()) {
+				boolean isSubsASS = params.getMediaSubtitle().getType() == SubtitleType.ASS;
 				String originalSubsFilename = null;
 				if (is3D) {
 					if (convertedSubs != null && convertedSubs.getConvertedFile() != null) { // subs are already converted to 3D so use them
@@ -186,26 +186,26 @@ public class FFMpegVideo extends Engine {
 						if (subtitlesFile != null) {
 							originalSubsFilename = subtitlesFile.getAbsolutePath();
 						} else {
-							LOGGER.error("External subtitles file \"{}\" is unavailable", params.getSid().getName());
+							LOGGER.error("External subtitles file \"{}\" is unavailable", params.getMediaSubtitle().getName());
 						}
 					} else {
-						if (params.getSid().getExternalFile() != null) {
-							originalSubsFilename = params.getSid().getExternalFile().getPath();
+						if (params.getMediaSubtitle().getExternalFile() != null) {
+							originalSubsFilename = params.getMediaSubtitle().getExternalFile().getPath();
 						} else {
-							LOGGER.error("External subtitles file \"{}\" is unavailable", params.getSid().getName());
+							LOGGER.error("External subtitles file \"{}\" is unavailable", params.getMediaSubtitle().getName());
 						}
 					}
-				} else if (params.getSid().isExternal()) {
-					if (params.getSid().getExternalFile() != null) {
+				} else if (params.getMediaSubtitle().isExternal()) {
+					if (params.getMediaSubtitle().getExternalFile() != null) {
 						if (
 							!renderer.streamSubsForTranscodedVideo() ||
-							!renderer.isExternalSubtitlesFormatSupported(params.getSid(), dlna)
+							!renderer.isExternalSubtitlesFormatSupported(params.getMediaSubtitle(), dlna)
 						) {
 							// Only transcode subtitles if they aren't streamable
-							originalSubsFilename = params.getSid().getExternalFile().getPath();
+							originalSubsFilename = params.getMediaSubtitle().getExternalFile().getPath();
 						}
 					} else {
-						LOGGER.error("External subtitles file \"{}\" is unavailable", params.getSid().getName());
+						LOGGER.error("External subtitles file \"{}\" is unavailable", params.getMediaSubtitle().getName());
 					}
 				} else {
 					originalSubsFilename = dlna.getFileName();
@@ -213,16 +213,16 @@ public class FFMpegVideo extends Engine {
 
 				if (originalSubsFilename != null) {
 					subsFilter.append("subtitles=").append(StringUtil.ffmpegEscape(originalSubsFilename));
-					if (params.getSid().isEmbedded()) {
-						subsFilter.append(":si=").append(params.getSid().getId());
+					if (params.getMediaSubtitle().isEmbedded()) {
+						subsFilter.append(":si=").append(params.getMediaSubtitle().getId());
 					}
 
 					// Set the input subtitles character encoding if not UTF-8
-					if (!params.getSid().isSubsUtf8()) {
+					if (!params.getMediaSubtitle().isSubsUtf8()) {
 						if (StringUtils.isNotBlank(configuration.getSubtitlesCodepage())) {
 							subsFilter.append(":charenc=").append(configuration.getSubtitlesCodepage());
-						} else if (params.getSid().getSubCharacterSet() != null) {
-							subsFilter.append(":charenc=").append(params.getSid().getSubCharacterSet());
+						} else if (params.getMediaSubtitle().getSubCharacterSet() != null) {
+							subsFilter.append(":charenc=").append(params.getMediaSubtitle().getSubCharacterSet());
 						}
 					}
 
@@ -247,16 +247,16 @@ public class FFMpegVideo extends Engine {
 						subsFilter.append("'");
 					}
 				}
-			} else if (params.getSid().getType().isPicture()) {
+			} else if (params.getMediaSubtitle().getType().isPicture()) {
 				StringBuilder subsPictureFilter = new StringBuilder();
-				if (params.getSid().isEmbedded()) {
+				if (params.getMediaSubtitle().isEmbedded()) {
 					// Embedded
-					subsPictureFilter.append("[0:v][0:s:").append(media.getSubtitlesTracks().indexOf(params.getSid())).append("]overlay");
+					subsPictureFilter.append("[0:v][0:s:").append(media.getSubtitlesTracks().indexOf(params.getMediaSubtitle())).append("]overlay");
 					isSubsManualTiming = false;
-				} else if (params.getSid().getExternalFile() != null) {
+				} else if (params.getMediaSubtitle().getExternalFile() != null) {
 					// External
 					videoFilterOptions.add("-i");
-					videoFilterOptions.add(params.getSid().getExternalFile().getPath());
+					videoFilterOptions.add(params.getMediaSubtitle().getExternalFile().getPath());
 					subsPictureFilter.append("[0:v][1:s]overlay"); // this assumes the sub file is single-language
 				}
 				filterChain.add(0, subsPictureFilter.toString());
@@ -349,8 +349,8 @@ public class FFMpegVideo extends Engine {
 			// Output audio codec
 			dtsRemux = isTsMuxeRVideoEngineActive &&
 				configuration.isAudioEmbedDtsInPcm() &&
-				params.getAid() != null &&
-				params.getAid().isDTS() &&
+				params.getMediaAudio() != null &&
+				params.getMediaAudio().isDTS() &&
 				!isAviSynthEngine() &&
 				renderer.isDTSPlayable();
 
@@ -358,8 +358,8 @@ public class FFMpegVideo extends Engine {
 
 			if (
 				configuration.isAudioRemuxAC3() &&
-				params.getAid() != null &&
-				renderer.isAudioStreamTypeSupportedInTranscodingContainer(params.getAid()) &&
+				params.getMediaAudio() != null &&
+				renderer.isAudioStreamTypeSupportedInTranscodingContainer(params.getMediaAudio()) &&
 				!isAviSynthEngine() &&
 				!isSubtitlesAndTimeseek
 			) {
@@ -823,12 +823,12 @@ public class FFMpegVideo extends Engine {
 
 		if (
 			configuration.isAudioRemuxAC3() &&
-			params.getAid() != null &&
-			params.getAid().isAC3() &&
+			params.getMediaAudio() != null &&
+			params.getMediaAudio().isAC3() &&
 			!isAviSynthEngine() &&
 			renderer.isTranscodeToAC3() &&
 			!isXboxOneWebVideo &&
-			params.getAid().getAudioProperties().getNumberOfChannels() <= configuration.getAudioChannelCount()
+			params.getMediaAudio().getAudioProperties().getNumberOfChannels() <= configuration.getAudioChannelCount()
 		) {
 			// AC-3 remux takes priority
 			ac3Remux = true;
@@ -836,8 +836,8 @@ public class FFMpegVideo extends Engine {
 			// Now check for DTS remux and LPCM streaming
 			dtsRemux = isTsMuxeRVideoEngineActive &&
 				configuration.isAudioEmbedDtsInPcm() &&
-				params.getAid() != null &&
-				params.getAid().isDTS() &&
+				params.getMediaAudio() != null &&
+				params.getMediaAudio().isDTS() &&
 				!isAviSynthEngine() &&
 				params.getMediaRenderer().isDTSPlayable();
 		}
@@ -854,7 +854,7 @@ public class FFMpegVideo extends Engine {
 		// Input filename
 		cmdList.add("-i");
 		if (avisynth && !filename.toLowerCase().endsWith(".iso")) {
-			File avsFile = AviSynthFFmpeg.getAVSScript(filename, params.getSid(), params.getFromFrame(), params.getToFrame(), frameRateRatio, frameRateNumber, configuration);
+			File avsFile = AviSynthFFmpeg.getAVSScript(filename, params.getMediaSubtitle(), params.getFromFrame(), params.getToFrame(), frameRateRatio, frameRateNumber, configuration);
 			cmdList.add(ProcessUtil.getShortFileNameIfWideChars(avsFile.getAbsolutePath()));
 		} else {
 			if (params.getStdIn() != null) {
@@ -874,13 +874,13 @@ public class FFMpegVideo extends Engine {
 		if (
 			EngineFactory.isEngineActive(MEncoderVideo.ID) &&
 			!(renderer instanceof OutputOverride) &&
-			params.getSid() != null &&
+			params.getMediaSubtitle() != null &&
 			!dlna.isInsideTranscodeFolder() &&
 			configuration.isFFmpegDeferToMEncoderForProblematicSubtitles() &&
-			params.getSid().isEmbedded() &&
+			params.getMediaSubtitle().isEmbedded() &&
 			(
-				params.getSid().getType().isText() ||
-				params.getSid().getType() == SubtitleType.VOBSUB
+				params.getMediaSubtitle().getType().isText() ||
+				params.getMediaSubtitle().getType() == SubtitleType.VOBSUB
 			)
 		) {
 			LOGGER.trace("Switching from FFmpeg to MEncoder to transcode subtitles because the user setting is enabled.");
@@ -898,7 +898,7 @@ public class FFMpegVideo extends Engine {
 			} else if (dlna.isInsideTranscodeFolder()) {
 				canMuxVideoWithFFmpeg = false;
 				LOGGER.trace(prependTraceReason + "the file is being played via a FFmpeg entry in the TRANSCODE folder.");
-			} else if (params.getSid() != null) {
+			} else if (params.getMediaSubtitle() != null) {
 				canMuxVideoWithFFmpeg = false;
 				LOGGER.trace(prependTraceReason + "we need to burn subtitles.");
 			} else if (isAviSynthEngine()) {
@@ -929,7 +929,7 @@ public class FFMpegVideo extends Engine {
 			} else if (!params.getMediaRenderer().isMuxH264MpegTS()) {
 				deferToTsmuxer = false;
 				LOGGER.trace(prependTraceReason + "the renderer does not support H.264 inside MPEG-TS.");
-			} else if (params.getSid() != null) {
+			} else if (params.getMediaSubtitle() != null) {
 				deferToTsmuxer = false;
 				LOGGER.trace(prependTraceReason + "we need to burn subtitles.");
 			} else if (isAviSynthEngine()) {
@@ -1001,7 +1001,7 @@ public class FFMpegVideo extends Engine {
 			cmdList.add("0:V");
 
 			cmdList.add("-map");
-			cmdList.add("0:a:" + (media.getAudioTracksList().indexOf(params.getAid())));
+			cmdList.add("0:a:" + (media.getAudioTracksList().indexOf(params.getMediaAudio())));
 		}
 
 		// Now configure the output streams
@@ -1042,7 +1042,7 @@ public class FFMpegVideo extends Engine {
 					)
 				) {
 					channels = 2;
-				} else if (params.getAid() != null && params.getAid().getAudioProperties().getNumberOfChannels() > configuration.getAudioChannelCount()) {
+				} else if (params.getMediaAudio() != null && params.getMediaAudio().getAudioProperties().getNumberOfChannels() > configuration.getAudioChannelCount()) {
 					channels = configuration.getAudioChannelCount();
 				}
 
@@ -1056,14 +1056,14 @@ public class FFMpegVideo extends Engine {
 					if (renderer.isTranscodeToAAC()) {
 						cmdList.add(Math.min(configuration.getAudioBitrate(), 320) + "k");
 					} else {
-						cmdList.add(String.valueOf(CodecUtil.getAC3Bitrate(configuration, params.getAid())) + "k");
+						cmdList.add(String.valueOf(CodecUtil.getAC3Bitrate(configuration, params.getMediaAudio())) + "k");
 					}
 				}
 
 				if (
 					!customFFmpegOptions.contains("-ar ") &&
-					params.getAid() != null &&
-					params.getAid().getSampleRate() != params.getMediaRenderer().getTranscodedVideoAudioSampleRate()
+					params.getMediaAudio() != null &&
+					params.getMediaAudio().getSampleRate() != params.getMediaRenderer().getTranscodedVideoAudioSampleRate()
 				) {
 					cmdList.add("-ar");
 					cmdList.add("" + params.getMediaRenderer().getTranscodedVideoAudioSampleRate());
@@ -1073,8 +1073,8 @@ public class FFMpegVideo extends Engine {
 				// The parameters of http://forum.minimserver.com/showthread.php?tid=4181&pid=27185 are used.
 				if (
 					!customFFmpegOptions.contains("--resampler") &&
-					params.getAid() != null &&
-					params.getAid().getSampleRate() != params.getMediaRenderer().getTranscodedVideoAudioSampleRate() &&
+					params.getMediaAudio() != null &&
+					params.getMediaAudio().getSampleRate() != params.getMediaRenderer().getTranscodedVideoAudioSampleRate() &&
 					configuration.isFFmpegSoX()
 				) {
 					cmdList.add("-resampler");
@@ -1689,7 +1689,7 @@ public class FFMpegVideo extends Engine {
 	 * @return
 	 */
 	public boolean isDisableSubtitles(OutputParams params) {
-		return configuration.isDisableSubtitles() || (params.getSid() == null) || isAviSynthEngine();
+		return configuration.isDisableSubtitles() || (params.getMediaSubtitle() == null) || isAviSynthEngine();
 	}
 
 	@Override

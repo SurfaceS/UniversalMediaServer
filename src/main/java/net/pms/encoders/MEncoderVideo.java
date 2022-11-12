@@ -415,7 +415,7 @@ public class MEncoderVideo extends Engine {
 	 *     3) avisynth()
 	 */
 	private boolean isDisableSubtitles(OutputParams params) {
-		return configuration.isDisableSubtitles() || (params.getSid() == null) || isAviSynthEngine();
+		return configuration.isDisableSubtitles() || (params.getMediaSubtitle() == null) || isAviSynthEngine();
 	}
 
 	@Override
@@ -435,18 +435,18 @@ public class MEncoderVideo extends Engine {
 		setAudioAndSubs(dlna, params);
 		String externalSubtitlesFileName = null;
 
-		if (params.getSid() != null && params.getSid().isExternal()) {
-			if (params.getSid().getExternalFile() != null) {
-				if (params.getSid().isExternalFileUtf16()) {
+		if (params.getMediaSubtitle() != null && params.getMediaSubtitle().isExternal()) {
+			if (params.getMediaSubtitle().getExternalFile() != null) {
+				if (params.getMediaSubtitle().isExternalFileUtf16()) {
 					// convert UTF-16 -> UTF-8
-					File convertedSubtitles = new File(configuration.getTempFolder(), "utf8_" + params.getSid().getExternalFile().getName());
-					FileUtil.convertFileFromUtf16ToUtf8(params.getSid().getExternalFile(), convertedSubtitles);
+					File convertedSubtitles = new File(configuration.getTempFolder(), "utf8_" + params.getMediaSubtitle().getExternalFile().getName());
+					FileUtil.convertFileFromUtf16ToUtf8(params.getMediaSubtitle().getExternalFile(), convertedSubtitles);
 					externalSubtitlesFileName = ProcessUtil.getShortFileNameIfWideChars(convertedSubtitles.getAbsolutePath());
 				} else {
-					externalSubtitlesFileName = ProcessUtil.getShortFileNameIfWideChars(params.getSid().getExternalFile());
+					externalSubtitlesFileName = ProcessUtil.getShortFileNameIfWideChars(params.getMediaSubtitle().getExternalFile());
 				}
 			} else {
-				LOGGER.error("External subtitles file \"{}\" is unavailable", params.getSid().getName());
+				LOGGER.error("External subtitles file \"{}\" is unavailable", params.getMediaSubtitle().getName());
 			}
 		}
 
@@ -501,7 +501,7 @@ public class MEncoderVideo extends Engine {
 		} else if (!params.getMediaRenderer().isMuxH264MpegTS()) {
 			deferToTsmuxer = false;
 			LOGGER.trace(prependTraceReason + "the renderer does not support H.264 inside MPEG-TS.");
-		} else if (params.getSid() != null) {
+		} else if (params.getMediaSubtitle() != null) {
 			deferToTsmuxer = false;
 			LOGGER.trace(prependTraceReason + "we need to burn subtitles.");
 		} else if (isDVD) {
@@ -573,7 +573,7 @@ public class MEncoderVideo extends Engine {
 
 				return tv.launchTranscode(dlna, media, params);
 			}
-		} else if (params.getSid() == null && isDVD && configuration.isMencoderRemuxMPEG2() && params.getMediaRenderer().isMpeg2Supported()) {
+		} else if (params.getMediaSubtitle() == null && isDVD && configuration.isMencoderRemuxMPEG2() && params.getMediaRenderer().isMpeg2Supported()) {
 			String[] expertOptions = getSpecificCodecOptions(
 				configuration.getMencoderCodecSpecificConfig(),
 				media,
@@ -649,7 +649,7 @@ public class MEncoderVideo extends Engine {
 		 */
 
 		final boolean isTsMuxeRVideoEngineActive = EngineFactory.isEngineActive(TsMuxeRVideo.ID);
-		final boolean mencoderAC3RemuxAudioDelayBug = (params.getAid() != null) && (params.getAid().getAudioProperties().getAudioDelay() != 0) && (params.getTimeSeek() == 0);
+		final boolean mencoderAC3RemuxAudioDelayBug = (params.getMediaAudio() != null) && (params.getMediaAudio().getAudioProperties().getAudioDelay() != 0) && (params.getTimeSeek() == 0);
 
 		encodedAudioPassthrough = isTsMuxeRVideoEngineActive &&
 			configuration.isEncodedAudioPassthrough() &&
@@ -658,22 +658,22 @@ public class MEncoderVideo extends Engine {
 				!isDVD ||
 				configuration.isMencoderRemuxMPEG2()
 			) &&
-			params.getAid() != null &&
-			params.getAid().isNonPCMEncodedAudio() &&
+			params.getMediaAudio() != null &&
+			params.getMediaAudio().isNonPCMEncodedAudio() &&
 			!isAviSynthEngine() &&
 			params.getMediaRenderer().isMuxLPCMToMpeg();
 
 		if (
 			configuration.isAudioRemuxAC3() &&
-			params.getAid() != null &&
-			params.getAid().isAC3() &&
+			params.getMediaAudio() != null &&
+			params.getMediaAudio().isAC3() &&
 			!isAviSynthEngine() &&
 			params.getMediaRenderer().isTranscodeToAC3() &&
 			!configuration.isMEncoderNormalizeVolume() &&
 			!combinedCustomOptions.contains("acodec=") &&
 			!encodedAudioPassthrough &&
 			!isXboxOneWebVideo &&
-			params.getAid().getAudioProperties().getNumberOfChannels() <= configuration.getAudioChannelCount()
+			params.getMediaAudio().getAudioProperties().getNumberOfChannels() <= configuration.getAudioChannelCount()
 		) {
 			ac3Remux = true;
 		} else {
@@ -684,8 +684,8 @@ public class MEncoderVideo extends Engine {
 					!isDVD ||
 					configuration.isMencoderRemuxMPEG2()
 				) &&
-				params.getAid() != null &&
-				params.getAid().isDTS() &&
+				params.getMediaAudio() != null &&
+				params.getMediaAudio().isDTS() &&
 				!isAviSynthEngine() &&
 				params.getMediaRenderer().isDTSPlayable() &&
 				!combinedCustomOptions.contains("acodec=");
@@ -697,22 +697,22 @@ public class MEncoderVideo extends Engine {
 				) &&
 				// Disable LPCM transcoding for MP4 container with non-H.264 video as workaround for MEncoder's A/V sync bug
 				!(media.getContainer().equals("mp4") && !media.isH264()) &&
-				params.getAid() != null &&
+				params.getMediaAudio() != null &&
 				(
-					(params.getAid().isDTS() && params.getAid().getAudioProperties().getNumberOfChannels() <= 6) || // disable 7.1 DTS-HD => LPCM because of channels mapping bug
-					params.getAid().isLossless() ||
-					params.getAid().isTrueHD() ||
+					(params.getMediaAudio().isDTS() && params.getMediaAudio().getAudioProperties().getNumberOfChannels() <= 6) || // disable 7.1 DTS-HD => LPCM because of channels mapping bug
+					params.getMediaAudio().isLossless() ||
+					params.getMediaAudio().isTrueHD() ||
 					(
 						!configuration.isMencoderUsePcmForHQAudioOnly() &&
 						(
-							params.getAid().isAC3() ||
-							params.getAid().isMP3() ||
-							params.getAid().isAAC() ||
-							params.getAid().isVorbis() ||
+							params.getMediaAudio().isAC3() ||
+							params.getMediaAudio().isMP3() ||
+							params.getMediaAudio().isAAC() ||
+							params.getMediaAudio().isVorbis() ||
 							// Disable WMA to LPCM transcoding because of mencoder's channel mapping bug
 							// (see CodecUtil.getMixerOutput)
 							// params.aid.isWMA() ||
-							params.getAid().isMpegAudio()
+							params.getMediaAudio().isMpegAudio()
 						)
 					)
 				) &&
@@ -740,17 +740,17 @@ public class MEncoderVideo extends Engine {
 
 		int channels;
 		if (ac3Remux) {
-			channels = params.getAid().getAudioProperties().getNumberOfChannels(); // AC-3 remux
+			channels = params.getMediaAudio().getAudioProperties().getNumberOfChannels(); // AC-3 remux
 		} else if (dtsRemux || encodedAudioPassthrough || (!params.getMediaRenderer().isXbox360() && wmv)) {
 			channels = 2;
 		} else if (
-			params.getAid().getAudioProperties().getNumberOfChannels() == 8 ||
-			params.getAid().isAAC()
+			params.getMediaAudio().getAudioProperties().getNumberOfChannels() == 8 ||
+			params.getMediaAudio().isAAC()
 		) {
 			// MEncoder crashes when trying to downmix 7.1 AAC to 5.1 AC-3
 			channels = 2;
 		} else if (pcm) {
-			channels = params.getAid().getAudioProperties().getNumberOfChannels();
+			channels = params.getMediaAudio().getAudioProperties().getNumberOfChannels();
 		} else {
 			/**
 			 * Note: MEncoder will output 2 audio channels if the input video had 2 channels
@@ -851,7 +851,7 @@ public class MEncoderVideo extends Engine {
 					if (wmv && !params.getMediaRenderer().isXbox360()) {
 						abitrate += "448";
 					} else {
-						abitrate += CodecUtil.getAC3Bitrate(configuration, params.getAid());
+						abitrate += CodecUtil.getAC3Bitrate(configuration, params.getMediaAudio());
 					}
 				}
 			}
@@ -1031,8 +1031,8 @@ public class MEncoderVideo extends Engine {
 			int userMargin     = 0;
 
 			// Use ASS flag (and therefore ASS font styles) for all subtitled files except vobsub, PGS (Blu-ray Disc) and DVD
-			boolean applyAssStyling = params.getSid().getType() != SubtitleType.VOBSUB &&
-				params.getSid().getType() != SubtitleType.PGS &&
+			boolean applyAssStyling = params.getMediaSubtitle().getType() != SubtitleType.VOBSUB &&
+				params.getMediaSubtitle().getType() != SubtitleType.PGS &&
 				configuration.isMencoderAss() &&   // GUI: enable subtitles formating
 				!foundNoassParam &&                // GUI: codec specific options
 				!isDVD;
@@ -1042,8 +1042,8 @@ public class MEncoderVideo extends Engine {
 
 				// GUI: Override ASS subtitles style if requested (always for SRT and TX3G subtitles)
 				boolean overrideAssStyle = !configuration.isUseEmbeddedSubtitlesStyle() ||
-					params.getSid().getType() == SubtitleType.SUBRIP ||
-					params.getSid().getType() == SubtitleType.TX3G;
+					params.getMediaSubtitle().getType() == SubtitleType.SUBRIP ||
+					params.getMediaSubtitle().getType() == SubtitleType.TX3G;
 
 				if (overrideAssStyle) {
 					String assSubColor = configuration.getSubsColor().getMEncoderHexValue();
@@ -1117,7 +1117,7 @@ public class MEncoderVideo extends Engine {
 				}
 
 				// Workaround for MPlayer #2041, remove when that bug is fixed
-				if (!params.getSid().isEmbedded()) {
+				if (!params.getMediaSubtitle().isEmbedded()) {
 					sb.append("-noflip-hebrew ");
 				}
 			// Use PLAINTEXT formatting
@@ -1162,24 +1162,24 @@ public class MEncoderVideo extends Engine {
 			}
 
 			// Apply DVD/VOBsub subtitle quality
-			if (params.getSid().getType() == SubtitleType.VOBSUB && configuration.getMencoderVobsubSubtitleQuality() != null) {
+			if (params.getMediaSubtitle().getType() == SubtitleType.VOBSUB && configuration.getMencoderVobsubSubtitleQuality() != null) {
 				String subtitleQuality = configuration.getMencoderVobsubSubtitleQuality();
 
 				sb.append("-spuaa ").append(subtitleQuality).append(' ');
 			}
 
 			// External subtitles file
-			if (params.getSid().isExternal()) {
-				if (!params.getSid().isExternalFileUtf()) {
+			if (params.getMediaSubtitle().isExternal()) {
+				if (!params.getMediaSubtitle().isExternalFileUtf()) {
 					String subcp = null;
 
 					// Append -subcp option for non UTF external subtitles
 					if (isNotBlank(configuration.getSubtitlesCodepage())) {
 						// Manual setting
 						subcp = configuration.getSubtitlesCodepage();
-					} else if (isNotBlank(SubtitleUtils.getSubCpOptionForMencoder(params.getSid()))) {
+					} else if (isNotBlank(SubtitleUtils.getSubCpOptionForMencoder(params.getMediaSubtitle()))) {
 						// Autodetect charset (blank mencoder_subcp config option)
-						subcp = SubtitleUtils.getSubCpOptionForMencoder(params.getSid());
+						subcp = SubtitleUtils.getSubCpOptionForMencoder(params.getMediaSubtitle());
 					}
 
 					if (isNotBlank(subcp)) {
@@ -1231,7 +1231,7 @@ public class MEncoderVideo extends Engine {
 
 		// Input filename
 		if (avisynth && !filename.toLowerCase().endsWith(".iso")) {
-			File avsFile = AviSynthMEncoder.getAVSScript(filename, params.getSid(), params.getFromFrame(), params.getToFrame(), frameRateRatio, frameRateNumber, configuration);
+			File avsFile = AviSynthMEncoder.getAVSScript(filename, params.getMediaSubtitle(), params.getFromFrame(), params.getToFrame(), frameRateRatio, frameRateNumber, configuration);
 			cmdList.add(ProcessUtil.getShortFileNameIfWideChars(avsFile.getAbsolutePath()));
 		} else {
 			if (params.getStdIn() != null) {
@@ -1258,10 +1258,10 @@ public class MEncoderVideo extends Engine {
 			}
 		}
 
-		if (!dtsRemux && !encodedAudioPassthrough && !pcm && !isAviSynthEngine() && params.getAid() != null && media.getAudioTracksList().size() > 1) {
+		if (!dtsRemux && !encodedAudioPassthrough && !pcm && !isAviSynthEngine() && params.getMediaAudio() != null && media.getAudioTracksList().size() > 1) {
 			cmdList.add("-aid");
 			boolean lavf = false; // TODO Need to add support for LAVF demuxing
-			cmdList.add("" + (lavf ? params.getAid().getId() + 1 : params.getAid().getId()));
+			cmdList.add("" + (lavf ? params.getMediaAudio().getId() + 1 : params.getMediaAudio().getId()));
 		}
 
 		/*
@@ -1279,27 +1279,27 @@ public class MEncoderVideo extends Engine {
 			cmdList.add("-noautosub");
 		} else {
 			// Note: isEmbedded() and isExternal() are mutually exclusive
-			if (params.getSid().isEmbedded()) { // internal (embedded) subs
+			if (params.getMediaSubtitle().isEmbedded()) { // internal (embedded) subs
 				// Ensure that external subtitles are not automatically loaded
 				cmdList.add("-noautosub");
 
 				// Specify which internal subtitle we want
 				cmdList.add("-sid");
-				cmdList.add("" + params.getSid().getId());
+				cmdList.add("" + params.getMediaSubtitle().getId());
 			} else if (externalSubtitlesFileName != null) { // external subtitles
-				assert params.getSid().isExternal(); // confirm the mutual exclusion
+				assert params.getMediaSubtitle().isExternal(); // confirm the mutual exclusion
 
 				// Ensure that internal subtitles are not automatically loaded
 				cmdList.add("-nosub");
 
-				if (params.getSid().getType() == SubtitleType.VOBSUB) {
+				if (params.getMediaSubtitle().getType() == SubtitleType.VOBSUB) {
 					cmdList.add("-vobsub");
 					cmdList.add(externalSubtitlesFileName.substring(0, externalSubtitlesFileName.length() - 4));
 					cmdList.add("-slang");
-					cmdList.add("" + params.getSid().getLang());
+					cmdList.add("" + params.getMediaSubtitle().getLang());
 				} else if (
 					!params.getMediaRenderer().streamSubsForTranscodedVideo() ||
-					!params.getMediaRenderer().isExternalSubtitlesFormatSupported(params.getSid(), dlna)
+					!params.getMediaRenderer().isExternalSubtitlesFormatSupported(params.getMediaSubtitle(), dlna)
 				) {
 					// Only transcode subtitles if they aren't streamable
 					cmdList.add("-sub");
@@ -1307,7 +1307,7 @@ public class MEncoderVideo extends Engine {
 					if (media.is3d()) {
 						if (convertedSubs != null && convertedSubs.getConvertedFile() != null) { // subs are already converted to 3D so use them
 							cmdList.add(convertedSubs.getConvertedFile().getAbsolutePath().replace(",", "\\,"));
-						} else if (params.getSid().getType() != SubtitleType.ASS) { // When subs are not converted and they are not in the ASS format and video is 3D then subs need conversion to 3D
+						} else if (params.getMediaSubtitle().getType() != SubtitleType.ASS) { // When subs are not converted and they are not in the ASS format and video is 3D then subs need conversion to 3D
 							File subsFilename = SubtitleUtils.getSubtitles(dlna, media, params, configuration, SubtitleType.ASS);
 							cmdList.add(subsFilename.getAbsolutePath().replace(",", "\\,"));
 						}
@@ -1315,7 +1315,7 @@ public class MEncoderVideo extends Engine {
 						cmdList.add(externalSubtitlesFileName.replace(",", "\\,")); // Commas in MEncoder separate multiple subtitle files
 					}
 
-					if (params.getSid().isExternalFileUtf()) {
+					if (params.getMediaSubtitle().isExternalFileUtf()) {
 						// Append -utf8 option for UTF-8 external subtitles
 						cmdList.add("-utf8");
 					}
@@ -1683,7 +1683,7 @@ public class MEncoderVideo extends Engine {
 							"autoaspect=1:vcodec=%s:acodec=%s:abitrate=%s:threads=%d:%s",
 							vcodec,
 							(configuration.isMencoderAc3Fixed() ? "ac3_fixed" : "ac3"),
-							CodecUtil.getAC3Bitrate(configuration, params.getAid()),
+							CodecUtil.getAC3Bitrate(configuration, params.getMediaAudio()),
 							configuration.getMencoderMaxThreads(),
 							expertOptions[l + 1]
 						);
@@ -1839,8 +1839,8 @@ public class MEncoderVideo extends Engine {
 				cmdList.add("-o");
 				cmdList.add(pipe.getInputPipe());
 
-				if (pcm && !channelsFilterPresent && params.getAid() != null) {
-					String mixer = AudioUtils.getLPCMChannelMappingForMencoder(params.getAid());
+				if (pcm && !channelsFilterPresent && params.getMediaAudio() != null) {
+					String mixer = AudioUtils.getLPCMChannelMappingForMencoder(params.getMediaAudio());
 					if (isNotBlank(mixer)) {
 						cmdList.add("-af");
 						cmdList.add(mixer);
@@ -1914,14 +1914,14 @@ public class MEncoderVideo extends Engine {
 				ffVideo.runInNewThread();
 
 				String aid = null;
-				if (media.getAudioTracksList().size() > 1 && params.getAid() != null) {
+				if (media.getAudioTracksList().size() > 1 && params.getMediaAudio() != null) {
 					if (media.getContainer() != null && (media.getContainer().equals(FormatConfiguration.AVI) || media.getContainer().equals(FormatConfiguration.FLV))) {
 						// TODO confirm (MP4s, OGMs and MOVs already tested: first aid is 0; AVIs: first aid is 1)
 						// For AVIs, FLVs and MOVs MEncoder starts audio tracks numbering from 1
-						aid = "" + (params.getAid().getId() + 1);
+						aid = "" + (params.getMediaAudio().getId() + 1);
 					} else {
 						// Everything else from 0
-						aid = "" + params.getAid().getId();
+						aid = "" + params.getMediaAudio().getId();
 					}
 				}
 
@@ -1935,7 +1935,7 @@ public class MEncoderVideo extends Engine {
 
 				String mixer = null;
 				if (pcm && !dtsRemux && !encodedAudioPassthrough) {
-					mixer = getLPCMChannelMappingForMencoder(params.getAid()); // LPCM always outputs 5.1/7.1 for multichannel tracks. Downmix with player if needed!
+					mixer = getLPCMChannelMappingForMencoder(params.getMediaAudio()); // LPCM always outputs 5.1/7.1 for multichannel tracks. Downmix with player if needed!
 				}
 
 				sm.setNbChannels(channels);
@@ -2023,8 +2023,8 @@ public class MEncoderVideo extends Engine {
 					 * Override with tsmuxer.meta setting
 					 */
 					String timeshift = "";
-					if (params.getAid() != null && mencoderAC3RemuxAudioDelayBug) {
-						timeshift = "timeshift=" + params.getAid().getAudioProperties().getAudioDelay() + "ms, ";
+					if (params.getMediaAudio() != null && mencoderAC3RemuxAudioDelayBug) {
+						timeshift = "timeshift=" + params.getMediaAudio().getAudioProperties().getAudioDelay() + "ms, ";
 					}
 
 					pwMux.println(videoType + ", \"" + ffVideoPipe.getOutputPipe() + "\", " + fps + "level=4.1, insertSEI, contSPS, track=1");
@@ -2154,7 +2154,7 @@ public class MEncoderVideo extends Engine {
 						interpreter.set("container", r);
 					} else if (media.getCodecV() != null && (media.getCodecV().equals(type) || media.getCodecV().equals(secondaryType))) {
 						interpreter.set("vcodec", r);
-					} else if (params.getAid() != null && params.getAid().getCodecA() != null && params.getAid().getCodecA().equals(type)) {
+					} else if (params.getMediaAudio() != null && params.getMediaAudio().getCodecA() != null && params.getMediaAudio().getCodecA().equals(type)) {
 						interpreter.set("acodec", r);
 					}
 				}
@@ -2163,12 +2163,12 @@ public class MEncoderVideo extends Engine {
 			}
 
 			interpreter.set("filename", filename);
-			interpreter.set("audio", params.getAid() != null);
-			interpreter.set("subtitles", params.getSid() != null);
+			interpreter.set("audio", params.getMediaAudio() != null);
+			interpreter.set("subtitles", params.getMediaSubtitle() != null);
 			interpreter.set("srtfile", externalSubtitlesFileName);
 
-			if (params.getAid() != null) {
-				interpreter.set("samplerate", params.getAid().getSampleRate());
+			if (params.getMediaAudio() != null) {
+				interpreter.set("samplerate", params.getMediaAudio().getSampleRate());
 			}
 
 			String frameRateNumber = media.getValidFps(false);
@@ -2183,8 +2183,8 @@ public class MEncoderVideo extends Engine {
 
 			interpreter.set("duration", media.getDurationInSeconds());
 
-			if (params.getAid() != null) {
-				interpreter.set("channels", params.getAid().getAudioProperties().getNumberOfChannels());
+			if (params.getMediaAudio() != null) {
+				interpreter.set("channels", params.getMediaAudio().getAudioProperties().getNumberOfChannels());
 			}
 
 			interpreter.set("height", media.getHeight());

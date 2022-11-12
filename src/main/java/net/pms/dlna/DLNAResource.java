@@ -3220,8 +3220,8 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 
 		// Pipe transcoding result
 		OutputParams params = new OutputParams(configurationSpecificToRenderer);
-		params.setAid(getMediaAudio());
-		params.setSid(mediaSubtitle);
+		params.setMediaAudio(getMediaAudio());
+		params.setMediaSubtitle(mediaSubtitle);
 		params.setMediaRenderer(renderer);
 		timeRange.limit(getSplitRange());
 		params.setTimeSeek(timeRange.getStartOrZero());

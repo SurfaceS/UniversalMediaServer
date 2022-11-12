@@ -358,9 +358,9 @@ public class PlayHandler implements HttpHandler {
 					CONFIGURATION.setFFmpegFontConfig(false);
 				}
 				OutputParams p = new OutputParams(CONFIGURATION);
-				p.setSid(rootResource.getMediaSubtitle());
+				p.setMediaSubtitle(rootResource.getMediaSubtitle());
 				Engine.setAudioAndSubs(rootResource, p);
-				if (p.getSid() != null && p.getSid().getType().isText()) {
+				if (p.getMediaSubtitle() != null && p.getMediaSubtitle().getType().isText()) {
 					try {
 						File subFile = SubtitleUtils.getSubtitles(rootResource, rootResource.getMedia(), p, CONFIGURATION, SubtitleType.WEBVTT);
 						LOGGER.debug("subFile " + subFile);

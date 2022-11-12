@@ -373,14 +373,14 @@ public class DLNAMediaInfo implements Cloneable {
 				getVideoTrackTitleFromMetadata().toLowerCase().replaceAll("\\-", "").contains("webdl")
 			) ||
 			(
-				params.getAid() != null &&
-				params.getAid().getAudioTrackTitleFromMetadata() != null &&
-				params.getAid().getAudioTrackTitleFromMetadata().toLowerCase().replaceAll("\\-", "").contains("webdl")
+				params.getMediaAudio() != null &&
+				params.getMediaAudio().getAudioTrackTitleFromMetadata() != null &&
+				params.getMediaAudio().getAudioTrackTitleFromMetadata().toLowerCase().replaceAll("\\-", "").contains("webdl")
 			) ||
 			(
-				params.getSid() != null &&
-				params.getSid().getSubtitlesTrackTitleFromMetadata() != null &&
-				params.getSid().getSubtitlesTrackTitleFromMetadata().toLowerCase().replaceAll("\\-", "").contains("webdl")
+				params.getMediaSubtitle() != null &&
+				params.getMediaSubtitle().getSubtitlesTrackTitleFromMetadata() != null &&
+				params.getMediaSubtitle().getSubtitlesTrackTitleFromMetadata().toLowerCase().replaceAll("\\-", "").contains("webdl")
 			)
 		);
 	}

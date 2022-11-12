@@ -40,8 +40,8 @@ public final class OutputParams {
 	private int waitbeforestart;
 	private IPipeProcess[] inputpipes = new IPipeProcess[2];
 	private IPipeProcess[] outputpipes = new IPipeProcess[2];
-	private DLNAMediaAudio aid;
-	private DLNAMediaSubtitle sid;
+	private DLNAMediaAudio mediaAudio;
+	private DLNAMediaSubtitle mediaSubtitle;
 	private int secondReadMinSize;
 	private int outputByteArrayStreamBufferSize;
 	private boolean noexitcheck;
@@ -94,8 +94,7 @@ public final class OutputParams {
 
 	@Override
 	public String toString() {
-		return "OutputParams [aid=" + getAid() +
-			", avidemux=" + isAvidemux() +
+		return "OutputParams [avidemux=" + isAvidemux() +
 			", cleanup=" + isCleanup() +
 			", forceFps=" + getForceFps() +
 			", forceType=" + getForceType() +
@@ -107,7 +106,9 @@ public final class OutputParams {
 			", losslessaudio=" + isLosslessAudio() +
 			", lossyaudio=" + isLossyAudio() +
 			", maxBufferSize=" + getMaxBufferSize()	+
+			", mediaAudio=" + getMediaAudio() +
 			", mediaRenderer=" + getMediaRenderer() +
+			", mediaSubtitle=" + getMediaSubtitle() +
 			", minBufferSize=" + getMinBufferSize() +
 			", minFileSize=" + getMinFileSize()	+
 			", no_videoencode=" + isNoVideoEncode() +
@@ -116,7 +117,6 @@ public final class OutputParams {
 			", output_pipes=" + Arrays.toString(getOutputPipes()) +
 			", secondread_minsize="	+ getSecondReadMinSize() +
 			", shift_scr=" + isShiftSscr() +
-			", sid=" + getSid() +
 			", stdin=" + getStdIn() +
 			", timeend=" + getTimeEnd() +
 			", timeseek=" + getTimeSeek() +
@@ -222,20 +222,20 @@ public final class OutputParams {
 		this.inputpipes = inputpipes;
 	}
 
-	public DLNAMediaAudio getAid() {
-		return aid;
+	public DLNAMediaAudio getMediaAudio() {
+		return mediaAudio;
 	}
 
-	public void setAid(DLNAMediaAudio aid) {
-		this.aid = aid;
+	public void setMediaAudio(DLNAMediaAudio mediaAudio) {
+		this.mediaAudio = mediaAudio;
 	}
 
-	public DLNAMediaSubtitle getSid() {
-		return sid;
+	public DLNAMediaSubtitle getMediaSubtitle() {
+		return mediaSubtitle;
 	}
 
-	public void setSid(DLNAMediaSubtitle sid) {
-		this.sid = sid;
+	public void setMediaSubtitle(DLNAMediaSubtitle mediaSubtitle) {
+		this.mediaSubtitle = mediaSubtitle;
 	}
 
 	public int getOutputByteArrayStreamBufferSize() {

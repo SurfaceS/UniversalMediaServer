@@ -768,25 +768,25 @@ public abstract class Engine {
 			return;
 		}
 
-		if (params.getAid() == null) {
-			params.setAid(resource.resolveAudioStream(params.getMediaRenderer()));
+		if (params.getMediaAudio() == null) {
+			params.setMediaAudio(resource.resolveAudioStream(params.getMediaRenderer()));
 		}
 
-		if (params.getSid() != null && params.getSid().getId() == DLNAMediaLang.DUMMY_ID) {
+		if (params.getMediaSubtitle() != null && params.getMediaSubtitle().getId() == DLNAMediaLang.DUMMY_ID) {
 			LOGGER.trace("Don't want subtitles!");
-			params.setSid(null);
-		} else if (params.getSid() instanceof DLNAMediaOnDemandSubtitle dLNAMediaOnDemandSubtitle) {
+			params.setMediaSubtitle(null);
+		} else if (params.getMediaSubtitle() instanceof DLNAMediaOnDemandSubtitle dLNAMediaOnDemandSubtitle) {
 			// Download/fetch live subtitles
-			if (params.getSid().getExternalFile() == null) {
+			if (params.getMediaSubtitle().getExternalFile() == null) {
 				if (!dLNAMediaOnDemandSubtitle.fetch()) {
-					LOGGER.error("Failed to fetch on-demand subtitles \"{}\"", params.getSid().getName());
+					LOGGER.error("Failed to fetch on-demand subtitles \"{}\"", params.getMediaSubtitle().getName());
 				}
-				if (params.getSid().getExternalFile() == null) {
-					params.setSid(null);
+				if (params.getMediaSubtitle().getExternalFile() == null) {
+					params.setMediaSubtitle(null);
 				}
 			}
-		} else if (params.getSid() == null) {
-			params.setSid(resource.resolveSubtitlesStream(params.getMediaRenderer(), params.getAid() == null ? null : params.getAid().getLang(), true));
+		} else if (params.getMediaSubtitle() == null) {
+			params.setMediaSubtitle(resource.resolveSubtitlesStream(params.getMediaRenderer(), params.getMediaAudio() == null ? null : params.getMediaAudio().getLang(), true));
 		}
 	}
 
