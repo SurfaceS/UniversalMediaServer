@@ -245,7 +245,6 @@ public class ImagesUtil {
 			}
 			media.setImageInfo(imageInfo);
 			if (format != null) {
-				media.setCodecV(format.toFormatConfiguration());
 				media.setContainer(format.toFormatConfiguration());
 			}
 			if (trace) {

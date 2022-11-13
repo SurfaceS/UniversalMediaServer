@@ -818,7 +818,7 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 					isIncompatible = true;
 					LOGGER.debug(prependTranscodingReason + "the audio will use the encoded audio passthrough feature", getName());
 				} else {
-					for (DLNAMediaAudio audioTrack : media.getAudioTracksList()) {
+					for (DLNAMediaAudio audioTrack : media.getAudioTracks()) {
 						if (audioTrack != null && (FormatConfiguration.AC3.equals(audioTrack.getAudioCodec()) ||
 							FormatConfiguration.DTS.equals(audioTrack.getAudioCodec()))) {
 							isIncompatible = true;
@@ -845,13 +845,13 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 					LOGGER.debug(prependTranscodingReason + "the bitrate ({} b/s) is too high ({} b/s).", getName(), media.getBitrate(),
 						maxBandwidth);
 				} else if (renderer.isH264Level41Limited() && media.isH264()) {
-					if (media.getAvcLevel() != null) {
+					if (media.getCodecLevel() != null) {
 						double h264Level = 4.1;
 
 						try {
-							h264Level = Double.parseDouble(media.getAvcLevel());
+							h264Level = Double.parseDouble(media.getCodecLevel());
 						} catch (NumberFormatException e) {
-							LOGGER.trace("Could not convert {} to double: {}", media.getAvcLevel(), e.getMessage());
+							LOGGER.trace("Could not convert {} to double: {}", media.getCodecLevel(), e.getMessage());
 						}
 
 						if (h264Level > 4.1) {
@@ -3399,7 +3399,7 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 				}
 			}
 
-			media.generateThumbnail(inputFile, getFormat(), getType(), seekPosition, isResume(), renderer);
+			media.generateThumbnail(inputFile, getFormat(), getType(), seekPosition, isResume());
 			if (!isResume() && media.getThumb() != null && configurationSpecificToRenderer.getUseCache() && inputFile.getFile() != null) {
 				MediaTableThumbnails.setThumbnail(media.getThumb(), inputFile.getFile().getAbsolutePath(), -1);
 			}
@@ -4046,7 +4046,7 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 		while (st.hasMoreTokens()) {
 			String lang = st.nextToken().trim();
 			LOGGER.trace("Looking for an audio track with language \"{}\" for \"{}\"", lang, getName());
-			for (DLNAMediaAudio audio : media.getAudioTracksList()) {
+			for (DLNAMediaAudio audio : media.getAudioTracks()) {
 				if (audio.matchCode(lang)) {
 					LOGGER.trace("Matched audio track: {}", audio);
 					return audio;

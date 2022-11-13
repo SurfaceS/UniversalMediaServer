@@ -125,22 +125,22 @@ public class DLNAMediaInfoTest {
 			switch(i) {
 				case 0:
 					assertEquals(mediaInfo.toString(),
-						"Container: MP4, Size: 1325017, Overall Bitrate: 676979, Video Tracks: 1, Video Codec: h264, Duration: 0:00:15.658, Video Resolution: 640 x 360, Display Aspect Ratio: 16:9, Scan Type: Progressive, Frame Rate: 23.976, Frame Rate Mode: CFR (CFR), Frame Rate Mode Raw: CFR, Matrix Coefficients: BT.601, Reference Frame Count: 4, AVC Level: 3, AVC Profile: high, Audio Tracks: 1 [Audio Codec: AAC-LC, Bitrate: 125547, Channels: 2, Sample Frequency: 48000 Hz], Mime Type: video/mp4"
+						"Container: MP4, Size: 1325017, Overall Bitrate: 676979, Duration: 0:00:15.658, Video Tracks: 1 [ Codec: h264, Codec Level: 3, Codec Profile: high, Resolution: 640 x 360, Display Aspect Ratio: 16:9, Scan Type: Progressive, Bit Depth: 8, Frame Rate Mode: CFR (CFR), Reference Frame Count: 4, Matrix Coefficients: BT.601], Audio Tracks: 1 [Audio Codec: AAC-LC, Bitrate: 125547, Channels: 2, Sample Frequency: 48000 Hz], Mime Type: video/mp4"
 					);
 					break;
 				case 1:
 					assertEquals(mediaInfo.toString(),
-						"Container: MKV, Size: 2097841, Overall Bitrate: 1575843, Video Tracks: 1, Video Codec: mp4, Duration: 0:00:10.650, Video Resolution: 1280 x 720, Display Aspect Ratio: 16:9, Scan Type: Progressive, Frame Rate Mode: VFR (VFR), Frame Rate Mode Raw: VFR, Audio Tracks: 1 [Audio Codec: AAC-LC, Bitrate: 0, Channels: 6, Sample Frequency: 48000 Hz], Mime Type: video/x-matroska"
+						"Container: MKV, Size: 2097841, Overall Bitrate: 1575843, Duration: 0:00:10.650, Video Tracks: 1 [ Codec: mp4, Codec Level: 1, Codec Profile: simple, Resolution: 1280 x 720, Display Aspect Ratio: 16:9, Scan Type: Progressive, Bit Depth: 8, Frame Rate Mode: VFR (VFR)], Audio Tracks: 1 [Audio Codec: AAC-LC, Bitrate: 0, Channels: 6, Sample Frequency: 48000 Hz], Mime Type: video/x-matroska"
 					);
 					break;
 				case 2:
 					assertEquals(mediaInfo.toString(),
-						"Container: MKV, Size: 5291494, Overall Bitrate: 2619551, Video Tracks: 1, Video Codec: h265, Duration: 0:00:16.160, Video Resolution: 1920 x 960, Display Aspect Ratio: 2.00:1, Frame Rate: 25.000, Frame Rate Mode: CFR (CFR), Frame Rate Mode Raw: CFR, Matrix Coefficients: BT.709, Audio Tracks: 1 [Id: 0, Language Code: eng, Audio Track Title From Metadata: Stereo, Audio Codec: AAC-LC, Bitrate: 0, Channels: 2, Sample Frequency: 48000 Hz], Mime Type: video/x-matroska"
+						"Container: MKV, Size: 5291494, Overall Bitrate: 2619551, Duration: 0:00:16.160, Video Tracks: 1 [ Codec: h265, Codec Level: 4@main, Codec Profile: main, Resolution: 1920 x 960, Display Aspect Ratio: 2.00:1, Bit Depth: 8, Frame Rate Mode: CFR (CFR), Matrix Coefficients: BT.709], Audio Tracks: 1 [Id: 0, Language Code: eng, Audio Track Title From Metadata: Stereo, Audio Codec: AAC-LC, Bitrate: 0, Channels: 2, Sample Frequency: 48000 Hz], Mime Type: video/x-matroska"
 					);
 					break;
 				case 3:
 					assertEquals(mediaInfo.toString(),
-						"Container: OGG, Size: 1734919, Overall Bitrate: 454643, Video Tracks: 1, Video Codec: theora, Duration: 0:00:30.528, Video Resolution: 480 x 270, Display Aspect Ratio: 16:9, Frame Rate: 30.000, Audio Tracks: 1 [Audio Codec: Vorbis, Bitrate: 112000, Channels: 2, Sample Frequency: 48000 Hz], Mime Type: video/ogg"
+						"Container: OGG, Size: 1734919, Overall Bitrate: 454643, Duration: 0:00:30.528, Video Tracks: 1 [ Codec: theora, Resolution: 480 x 270, Display Aspect Ratio: 16:9, Video Depth: 0, Bit Depth: 0], Audio Tracks: 1 [Audio Codec: Vorbis, Bitrate: 112000, Channels: 2, Sample Frequency: 48000 Hz], Mime Type: video/ogg"
 					);
 					break;
 				case 4:

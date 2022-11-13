@@ -20,7 +20,7 @@ import net.pms.PMS;
 import net.pms.configuration.FormatConfiguration;
 import net.pms.dlna.DLNAMediaAudio;
 import net.pms.dlna.DLNAMediaInfo;
-import net.pms.parsers.mediainfo.StreamKind;
+import net.pms.dlna.DLNAMediaVideo;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -117,16 +117,17 @@ public class MediaInfoParserTest {
 	public void testSetFormat() throws Exception {
 		DLNAMediaInfo media = new DLNAMediaInfo();
 		DLNAMediaAudio audio = new DLNAMediaAudio();
-		MediaInfoParser.setFormat(StreamKind.GENERAL, media, audio, "XVID", null);
+		DLNAMediaVideo video = new DLNAMediaVideo();
+		MediaInfoParser.setGeneralFormat(media, "XVID", null);
 		assertEquals(FormatConfiguration.DIVX, media.getContainer());
-		MediaInfoParser.setFormat(StreamKind.VIDEO, media, audio, "XVID", null);
-		assertEquals(FormatConfiguration.DIVX, media.getCodecV());
+		MediaInfoParser.setVideoFormat(media, video, "XVID", null);
+		assertEquals(FormatConfiguration.DIVX, video.getCodec());
 		media.setContainer("");
-		MediaInfoParser.setFormat(StreamKind.GENERAL, media, audio, "mp42 (mp42/isom)", null);
+		MediaInfoParser.setAudioFormat(media, audio, "mp42 (mp42/isom)", null);
 		assertEquals(FormatConfiguration.MP4, media.getContainer());
-		media.setCodecV("");
-		MediaInfoParser.setFormat(StreamKind.VIDEO, media, audio, "DIVX", null);
-		assertEquals(FormatConfiguration.DIVX, media.getCodecV());
+		video.setCodec("");
+		MediaInfoParser.setVideoFormat(media, video, "DIVX", null);
+		assertEquals(FormatConfiguration.DIVX, video.getCodec());
 		// TODO this can continue with other container, video and audio formats
 	}
 }

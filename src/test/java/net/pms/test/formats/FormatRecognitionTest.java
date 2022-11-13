@@ -29,6 +29,7 @@ import net.pms.configuration.UmsConfiguration;
 import net.pms.dlna.DLNAMediaAudio;
 import net.pms.dlna.DLNAMediaInfo;
 import net.pms.dlna.DLNAMediaSubtitle;
+import net.pms.dlna.DLNAMediaVideo;
 import net.pms.dlna.DLNAResource;
 import net.pms.dlna.RealFile;
 import net.pms.formats.DVRMS;
@@ -142,10 +143,14 @@ public class FormatRecognitionTest {
 		DLNAMediaAudio audio = new DLNAMediaAudio();
 		audio.setCodecA("ac3");
 		audio.getAudioProperties().setNumberOfChannels(5);
-		List<DLNAMediaAudio> audioCodes = new ArrayList<>();
-		audioCodes.add(audio);
-		info.setAudioTracks(audioCodes);
-		info.setCodecV("mp4");
+		List<DLNAMediaAudio> audioTracks = new ArrayList<>();
+		audioTracks.add(audio);
+		info.setAudioTracks(audioTracks);
+		DLNAMediaVideo video = new DLNAMediaVideo();
+		video.setCodec("mp4");
+		List<DLNAMediaVideo> videoTracks = new ArrayList<>();
+		videoTracks.add(video);
+		info.setVideoTracks(videoTracks);
 		Format format = new MPG();
 		format.match("test.avi");
 		dlna.setMedia(info);
@@ -153,7 +158,7 @@ public class FormatRecognitionTest {
 			"PS3 is compatible with MPG");
 
 		// Construct MPG with wmv codec that the PS3 does not support natively
-		info.setCodecV("wmv");
+		video.setCodec("wmv");
 		assertFalse(conf.isCompatible(dlna, format, configuration),
 			"PS3 is incompatible with MPG with wmv codec");
 	}
@@ -179,7 +184,11 @@ public class FormatRecognitionTest {
 		List<DLNAMediaAudio> audioCodes = new ArrayList<>();
 		audioCodes.add(audio);
 		info.setAudioTracks(audioCodes);
-		info.setCodecV("mp4");
+		DLNAMediaVideo video = new DLNAMediaVideo();
+		video.setCodec(FormatConfiguration.MP4);
+		List<DLNAMediaVideo> videoTracks = new ArrayList<>();
+		videoTracks.add(video);
+		info.setVideoTracks(videoTracks);
 		Format format = new MPG();
 		format.match("test.mkv");
 		dlna.setMedia(info);
@@ -301,7 +310,11 @@ public class FormatRecognitionTest {
 		List<DLNAMediaAudio> audioCodes = new ArrayList<>();
 		info.setAudioTracks(audioCodes);
 		info.setMimeType("video/mpeg");
-		info.setCodecV("mpeg2");
+		DLNAMediaVideo video = new DLNAMediaVideo();
+		video.setCodec("mpeg2");
+		List<DLNAMediaVideo> videoTracks = new ArrayList<>();
+		videoTracks.add(video);
+		info.setVideoTracks(videoTracks);
 		info.setMediaparsed(true);
 		Format format = new MPG();
 		format.match("test.mpg");
@@ -333,8 +346,12 @@ public class FormatRecognitionTest {
 		DLNAMediaSubtitle subs = new DLNAMediaSubtitle();
 		audio.setCodecA(FormatConfiguration.AC3);
 		info.setContainer(FormatConfiguration.AVI);
-		info.setCodecV(FormatConfiguration.MP4);
-		info.getAudioTracksList().add(audio);
+		DLNAMediaVideo video = new DLNAMediaVideo();
+		video.setCodec(FormatConfiguration.MP4);
+		List<DLNAMediaVideo> videoTracks = new ArrayList<>();
+		videoTracks.add(video);
+		info.setVideoTracks(videoTracks);
+		info.getAudioTracks().add(audio);
 		dlna.setMedia(info);
 
 		// SUBRIP external: true

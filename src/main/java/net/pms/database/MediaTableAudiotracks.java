@@ -24,6 +24,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -59,6 +61,8 @@ public class MediaTableAudiotracks extends MediaTable {
 	public static final String TABLE_COL_MBID_TRACK = TABLE_NAME + "." + COL_MBID_TRACK;
 	public static final String TABLE_COL_MEDIA_YEAR = TABLE_NAME + ".MEDIA_YEAR";
 	public static final String TABLE_COL_TRACK = TABLE_NAME + ".TRACK";
+
+	private static final String SQL_GET_ALL_FILEID = "SELECT * FROM " + TABLE_NAME + " WHERE " + TABLE_COL_FILEID + " = ?";
 
 	private static final int SIZE_LANG = 3;
 	private static final int SIZE_GENRE = 64;
@@ -261,7 +265,7 @@ public class MediaTableAudiotracks extends MediaTable {
 				createDefaultValueForInsertStatement(columns)
 			);
 		) {
-			for (DLNAMediaAudio audioTrack : media.getAudioTracksList()) {
+			for (DLNAMediaAudio audioTrack : media.getAudioTracks()) {
 				updateStatment.setLong(1, fileId);
 				updateStatment.setInt(2, audioTrack.getId());
 				try (ResultSet rs = updateStatment.executeQuery()) {
@@ -382,4 +386,48 @@ public class MediaTableAudiotracks extends MediaTable {
 			}
 		}
 	}
+
+
+	protected static List<DLNAMediaAudio> getAudioTracks(Connection connection, long fileId) {
+		List<DLNAMediaAudio> result = new ArrayList<>();
+		if (connection == null || fileId < 0) {
+			return result;
+		}
+		try (PreparedStatement stmt = connection.prepareStatement(SQL_GET_ALL_FILEID)) {
+			stmt.setLong(1, fileId);
+			try (ResultSet elements = stmt.executeQuery()) {
+				while (elements.next()) {
+					DLNAMediaAudio audio = new DLNAMediaAudio();
+					audio.setId(elements.getInt("ID"));
+					audio.setLang(elements.getString("LANG"));
+					audio.setAudioTrackTitleFromMetadata(elements.getString("TITLE"));
+					audio.getAudioProperties().setNumberOfChannels(elements.getInt("NRAUDIOCHANNELS"));
+					audio.setSampleFrequency(elements.getString("SAMPLEFREQ"));
+					audio.setCodecA(elements.getString("CODECA"));
+					audio.setBitsperSample(elements.getInt("BITSPERSAMPLE"));
+					audio.setAlbum(elements.getString("ALBUM"));
+					audio.setArtist(elements.getString("ARTIST"));
+					audio.setAlbumArtist(elements.getString("ALBUMARTIST"));
+					audio.setSongname(elements.getString("SONGNAME"));
+					audio.setGenre(elements.getString("GENRE"));
+					audio.setYear(elements.getInt("MEDIA_YEAR"));
+					audio.setTrack(elements.getInt("TRACK"));
+					audio.setDisc(elements.getInt("DISC"));
+					audio.getAudioProperties().setAudioDelay(elements.getInt("DELAY"));
+					audio.setMuxingModeAudio(elements.getString("MUXINGMODE"));
+					audio.setBitRate(elements.getInt("BITRATE"));
+					audio.setRating(elements.getInt("RATING"));
+					audio.setAudiotrackId(elements.getInt("AUDIOTRACK_ID"));
+					audio.setMbidRecord(elements.getString("MBID_RECORD"));
+					audio.setMbidTrack(elements.getString("MBID_TRACK"));
+					result.add(audio);
+				}
+			}
+		} catch (SQLException e) {
+			LOGGER.error("Database error in " + TABLE_NAME + " for \"{}\": {}", fileId, e.getMessage());
+			LOGGER.trace("", e);
+		}
+		return result;
+	}
+
 }

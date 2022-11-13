@@ -353,8 +353,9 @@ public class DCRaw extends ImageEngine {
 		for (String s : list) {
 			matcher = pattern.matcher(s);
 			if (matcher.find()) {
-				media.setWidth(Integer.parseInt(matcher.group(1)));
-				media.setHeight(Integer.parseInt(matcher.group(2)));
+				//FIXME : set image
+				//media.setWidth(Integer.parseInt(matcher.group(1)));
+				//media.setHeight(Integer.parseInt(matcher.group(2)));
 				if (LOGGER.isTraceEnabled()) {
 					LOGGER.trace(
 						"Parsed resolution {} x {} for image \"{}\" from DCRaw output",

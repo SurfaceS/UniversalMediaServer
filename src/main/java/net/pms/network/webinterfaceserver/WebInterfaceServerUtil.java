@@ -511,8 +511,8 @@ public class WebInterfaceServerUtil {
 	}
 
 	public static boolean transMp4(String mime, DLNAMediaInfo media) {
-		LOGGER.debug("mp4 profile " + media.getH264Profile());
-		return mime.equals(HTTPResource.MP4_TYPEMIME) && (PMS.getConfiguration().isWebPlayerMp4Trans() || media.getAvcAsInt() >= 40);
+		LOGGER.debug("mp4 profile " + media.getCodecProfile());
+		return mime.equals(HTTPResource.MP4_TYPEMIME) && (PMS.getConfiguration().isWebPlayerMp4Trans() || media.getCodecLevelAsInt() >= 40);
 	}
 
 	private static IpFilter bumpFilter = null;

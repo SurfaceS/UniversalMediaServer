@@ -988,7 +988,7 @@ public class FFMpegVideo extends Engine {
 
 		// Map the proper audio stream when there are multiple audio streams.
 		// For video the FFMpeg automatically chooses the stream with the highest resolution.
-		if (media.getAudioTracksList().size() > 1) {
+		if (media.getAudioTracks().size() > 1) {
 			/**
 			 * Use the first video stream that is not an attached picture, video
 			 * thumbnail or cover art.
@@ -1001,7 +1001,7 @@ public class FFMpegVideo extends Engine {
 			cmdList.add("0:V");
 
 			cmdList.add("-map");
-			cmdList.add("0:a:" + (media.getAudioTracksList().indexOf(params.getMediaAudio())));
+			cmdList.add("0:a:" + (media.getAudioTracks().indexOf(params.getMediaAudio())));
 		}
 
 		// Now configure the output streams
@@ -1369,7 +1369,7 @@ public class FFMpegVideo extends Engine {
 			cmdList.add("-sn");
 		}
 
-		if (media.getAudioTracksList().size() > 1) {
+		if (media.getAudioTracks().size() > 1) {
 			if (needVideo) {
 				cmdList.add("-map");
 				cmdList.add("0:V");

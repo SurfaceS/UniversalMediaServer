@@ -44,6 +44,7 @@ import net.pms.PMS;
 import net.pms.configuration.UmsConfiguration;
 import net.pms.dlna.DLNAMediaAudio;
 import net.pms.dlna.DLNAMediaInfo;
+import net.pms.dlna.DLNAMediaVideo;
 import net.pms.io.OutputParams;
 import net.pms.newgui.GuiUtil;
 import net.pms.newgui.components.CustomJButton;
@@ -153,16 +154,18 @@ public class MEncoderVideo {
 				String newCodecparam = textArea.getText();
 				DLNAMediaInfo fakemedia = new DLNAMediaInfo();
 				DLNAMediaAudio audio = new DLNAMediaAudio();
+				DLNAMediaVideo video = new DLNAMediaVideo();
 				audio.setCodecA("ac3");
-				fakemedia.setCodecV("mpeg4");
+				audio.getAudioProperties().setNumberOfChannels(2);
+				audio.setSampleFrequency("48000");
+				video.setCodec("mpeg4");
+				video.setWidth(1280);
+				video.setHeight(720);
+				video.setFrameRate("23.976");
+				fakemedia.getAudioTracks().add(audio);
+				fakemedia.getVideoTracks().add(video);
 				fakemedia.setContainer("matroska");
 				fakemedia.setDuration(45d * 60);
-				audio.getAudioProperties().setNumberOfChannels(2);
-				fakemedia.setWidth(1280);
-				fakemedia.setHeight(720);
-				audio.setSampleFrequency("48000");
-				fakemedia.setFrameRate("23.976");
-				fakemedia.getAudioTracksList().add(audio);
 				String[] result = net.pms.encoders.MEncoderVideo.getSpecificCodecOptions(newCodecparam, fakemedia, new OutputParams(CONFIGURATION), "dummy.mpg", "dummy.srt", false, true);
 
 				if (result.length > 0 && result[0].startsWith("@@")) {

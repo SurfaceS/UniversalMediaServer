@@ -651,7 +651,7 @@ public class FormatConfiguration {
 
 		String finalMimeType = null;
 
-		for (DLNAMediaAudio audio : media.getAudioTracksList()) {
+		for (DLNAMediaAudio audio : media.getAudioTracks()) {
 			String mimeType = getMatchedMIMEtype(
 				media.getContainer(),
 				media.getCodecV(),

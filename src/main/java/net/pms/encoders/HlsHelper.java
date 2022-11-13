@@ -129,13 +129,13 @@ public class HlsHelper {
 			//add audio languages
 			List<HlsAudioConfiguration> audioGroups = new ArrayList<>();
 			DLNAMediaAudio mediaAudioDefault = null;
-			if (!mediaVideo.getAudioTracksList().isEmpty()) {
+			if (!mediaVideo.getAudioTracks().isEmpty()) {
 				//try to find the prefered language
 				mediaAudioDefault = null;
 				StringTokenizer st = new StringTokenizer(CONFIGURATION.getAudioLanguages(), ",");
 				while (st.hasMoreTokens() && mediaAudioDefault == null) {
 					String lang = st.nextToken().trim();
-					for (DLNAMediaAudio mediaAudio : mediaVideo.getAudioTracksList()) {
+					for (DLNAMediaAudio mediaAudio : mediaVideo.getAudioTracks()) {
 						if (mediaAudio.matchCode(lang)) {
 							mediaAudioDefault = mediaAudio;
 							break;
@@ -157,7 +157,7 @@ public class HlsHelper {
 			Map<String, Integer> audioNames = new HashMap<>();
 			for (HlsAudioConfiguration audioGroup : audioGroups) {
 				String groupId = audioGroup.label;
-				for (DLNAMediaAudio mediaAudio : mediaVideo.getAudioTracksList()) {
+				for (DLNAMediaAudio mediaAudio : mediaVideo.getAudioTracks()) {
 					sb.append("#EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID=\"").append(groupId).append("\",LANGUAGE=\"");
 					sb.append(mediaAudio.getLang()).append("\",NAME=\"");
 					String audioName = mediaAudio.getLangFullName();
@@ -342,14 +342,14 @@ public class HlsHelper {
 	}
 
 	public static boolean isMediaCompatible(DLNAMediaInfo mediaVideo) {
-		if (mediaVideo.isH264() && mediaVideo.getAvcAsInt() <= 52) {
+		if (mediaVideo.isH264() && mediaVideo.getCodecLevelAsInt() <= 52) {
 			//can't check that, we do not store it on database
 			//profile is not saved in database...
 			//getAvcProfileId(mediaVideo.getH264Profile()) <= 100
 			if (!mediaVideo.hasAudio()) {
 				return true;
 			}
-			for (DLNAMediaAudio mediaAudio : mediaVideo.getAudioTracksList()) {
+			for (DLNAMediaAudio mediaAudio : mediaVideo.getAudioTracks()) {
 				if (isMediaAudioCompatible(mediaAudio)) {
 					return true;
 				}

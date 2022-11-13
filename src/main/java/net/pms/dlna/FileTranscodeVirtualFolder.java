@@ -192,7 +192,7 @@ public class FileTranscodeVirtualFolder extends TranscodeVirtualFolder {
 
 			// create copies of the audio/subtitle track lists as we're making (local)
 			// modifications to them
-			List<DLNAMediaAudio> audioTracks = new ArrayList<>(originalResource.getMedia().getAudioTracksList());
+			List<DLNAMediaAudio> audioTracks = new ArrayList<>(originalResource.getMedia().getAudioTracks());
 			List<DLNAMediaSubtitle> subtitlesTracks;
 			if (getMediaSubtitle() != null) {
 				// Transcode folder of live subtitles folder

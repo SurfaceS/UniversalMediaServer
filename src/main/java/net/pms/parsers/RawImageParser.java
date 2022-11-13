@@ -61,7 +61,6 @@ public class RawImageParser {
 				LOGGER.trace("Parsing RAW image \"{}\" with DCRaw", file.getFile().getName());
 				dcraw.parse(media, file.getFile());
 
-				media.setCodecV(FormatConfiguration.RAW);
 				media.setContainer(FormatConfiguration.RAW);
 
 				ImageInfo imageInfo = null;

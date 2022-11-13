@@ -92,9 +92,9 @@ public class UMSUtils {
 			}
 
 			if (!keep) {
-				if (media != null && media.getAudioTracksList() != null) {
-					for (int j = 0; j < media.getAudioTracksList().size(); j++) {
-						DLNAMediaAudio audio = media.getAudioTracksList().get(j);
+				if (media != null && media.getAudioTracks() != null) {
+					for (int j = 0; j < media.getAudioTracks().size(); j++) {
+						DLNAMediaAudio audio = media.getAudioTracks().get(j);
 						if (audio.getAlbum() != null) {
 							keep |= audio.getAlbum().toLowerCase().contains(searchString);
 						}

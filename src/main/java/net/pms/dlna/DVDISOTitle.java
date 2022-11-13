@@ -147,8 +147,10 @@ public class DVDISOTitle extends DLNAResource {
 		String width = null;
 		String height = null;
 		String codecV = null;
+		ArrayList<DLNAMediaVideo> videoTracks = new ArrayList<>();
 		ArrayList<DLNAMediaAudio> audioTracks = new ArrayList<>();
 		ArrayList<DLNAMediaSubtitle> subtitles = new ArrayList<>();
+		DLNAMediaVideo video = new DLNAMediaVideo();
 		if (lines != null) {
 			for (String line : lines) {
 				if (line.startsWith("DVD start=")) {
@@ -251,24 +253,25 @@ public class DVDISOTitle extends DLNAResource {
 		if (duration != null) {
 			getMedia().setDuration(d);
 		}
-		getMedia().setFrameRate(fps);
 		getMedia().setAspectRatioDvdIso(aspect);
 		getMedia().setDvdtrack(title);
 		getMedia().setContainer(FormatConfiguration.ISO);
-		getMedia().setCodecV(codecV != null ? codecV : FormatConfiguration.MPEG2);
-		getMedia().setVideoTrackCount(1);
+		video.setFrameRate(fps);
+		video.setCodec(codecV != null ? codecV : FormatConfiguration.MPEG2);
 
 		try {
-			getMedia().setWidth(Integer.parseInt(width));
+			video.setWidth(Integer.parseInt(height));
 		} catch (NumberFormatException nfe) {
 			LOGGER.debug("Could not parse DVD video width \"{}\"", width);
 		}
 
 		try {
-			getMedia().setHeight(Integer.parseInt(height));
+			video.setHeight(Integer.parseInt(height));
 		} catch (NumberFormatException nfe) {
 			LOGGER.debug("Could not parse DVD video height \"{}\"", height);
 		}
+		videoTracks.add(video);
+		getMedia().setVideoTracks(videoTracks);
 
 		getMedia().setMediaparsed(true);
 	}

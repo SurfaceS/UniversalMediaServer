@@ -445,7 +445,7 @@ public class RealFile extends VirtualFile {
 	 */
 	protected void checkCoverThumb() {
 		if (getMedia() != null && getMedia().isAudio() && getMedia().getAudioTrackCount() > 0) {
-			String mbReleaseId = getMedia().getAudioTracksList().get(0).getMbidRecord();
+			String mbReleaseId = getMedia().getAudioTracks().get(0).getMbidRecord();
 			if (!StringUtils.isAllBlank(mbReleaseId)) {
 				try {
 					if (!MediaTableCoverArtArchive.hasCover(mbReleaseId)) {

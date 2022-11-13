@@ -35,6 +35,7 @@ import net.pms.dlna.DLNAMediaChapter;
 import net.pms.dlna.DLNAMediaInfo;
 import net.pms.dlna.DLNAMediaLang;
 import net.pms.dlna.DLNAMediaSubtitle;
+import net.pms.dlna.DLNAMediaVideo;
 import net.pms.dlna.DLNAThumbnail;
 import net.pms.dlna.InputFile;
 import net.pms.formats.Format;
@@ -151,14 +152,15 @@ public class MediaInfoParser {
 			StreamKind audio = StreamKind.AUDIO;
 			StreamKind image = StreamKind.IMAGE;
 			StreamKind text = StreamKind.TEXT;
-			DLNAMediaAudio currentAudioTrack = new DLNAMediaAudio();
+			DLNAMediaVideo currentVideoTrack;
+			DLNAMediaAudio currentAudioTrack;
 			DLNAMediaSubtitle currentSubTrack;
 			media.setSize(file.length());
 			String value;
 
 			// set General
-			setFormat(general, media, currentAudioTrack, MI.get(general, 0, "Format"), file);
-			setFormat(general, media, currentAudioTrack, MI.get(general, 0, "CodecID").trim(), file);
+			setGeneralFormat(media, MI.get(general, 0, "Format"), file);
+			setGeneralFormat(media, MI.get(general, 0, "CodecID").trim(), file);
 			media.setDuration(parseDuration(MI.get(general, 0, "Duration")));
 			media.setBitrate(getBitrate(MI.get(general, 0, "OverallBitRate")));
 			media.setStereoscopy(MI.get(general, 0, "StereoscopicLayout"));
@@ -253,7 +255,6 @@ public class MediaInfoParser {
 				videoTrackCount = Integer.parseInt(value);
 			}
 
-			media.setVideoTrackCount(videoTrackCount);
 			if (videoTrackCount > 0) {
 				for (int i = 0; i < videoTrackCount; i++) {
 					// check for DXSA and DXSB subtitles (subs in video format)
@@ -268,65 +269,73 @@ public class MediaInfoParser {
 						currentSubTrack.setId(media.getSubtitlesTracks().size());
 						addSub(currentSubTrack, media);
 					} else {
-						setFormat(video, media, currentAudioTrack, MI.get(video, i, "Format"), file);
-						setFormat(video, media, currentAudioTrack, MI.get(video, i, "Format_Version"), file);
-						setFormat(video, media, currentAudioTrack, MI.get(video, i, "CodecID"), file);
-						media.setWidth(getPixelValue(MI.get(video, i, "Width")));
-						media.setHeight(getPixelValue(MI.get(video, i, "Height")));
-						media.setMatrixCoefficients(MI.get(video, i, "matrix_coefficients"));
+						currentVideoTrack = new DLNAMediaVideo();
+						currentVideoTrack.setVideoStreamIndex(i + 1);
+						setVideoFormat(media, currentVideoTrack, MI.get(video, i, "Format"), file);
+						setVideoFormat(media, currentVideoTrack, MI.get(video, i, "Format_Version"), file);
+						setVideoFormat(media, currentVideoTrack, MI.get(video, i, "CodecID"), file);
+						currentVideoTrack.setWidth(getPixelValue(MI.get(video, i, "Width")));
+						currentVideoTrack.setHeight(getPixelValue(MI.get(video, i, "Height")));
+						currentVideoTrack.setMatrixCoefficients(MI.get(video, i, "matrix_coefficients"));
 						if (!media.is3d()) {
-							media.setStereoscopy(MI.get(video, i, "MultiView_Layout"));
+							currentVideoTrack.setStereoscopy(MI.get(video, i, "MultiView_Layout"));
 						}
 
-						media.setPixelAspectRatio(MI.get(video, i, "PixelAspectRatio"));
-						media.setScanType(MI.get(video, i, "ScanType"));
-						media.setScanOrder(MI.get(video, i, "ScanOrder"));
-						media.setAspectRatioContainer(MI.get(video, i, "DisplayAspectRatio/String"));
-						media.setAspectRatioVideoTrack(MI.get(video, i, "DisplayAspectRatio_Original/String"));
-						media.setFrameRate(getFPSValue(MI.get(video, i, "FrameRate")));
-						media.setFrameRateOriginal(MI.get(video, i, "FrameRate_Original"));
-						media.setFrameRateMode(getFrameRateModeValue(MI.get(video, i, "FrameRate_Mode")));
-						media.setFrameRateModeRaw(MI.get(video, i, "FrameRate_Mode"));
-						media.setReferenceFrameCount(getReferenceFrameCount(MI.get(video, i, "Format_Settings_RefFrames/String")));
-						media.setVideoTrackTitleFromMetadata(MI.get(video, i, "Title"));
+						currentVideoTrack.setPixelAspectRatio(MI.get(video, i, "PixelAspectRatio"));
+						currentVideoTrack.setScanType(MI.get(video, i, "ScanType"));
+						currentVideoTrack.setScanOrder(MI.get(video, i, "ScanOrder"));
+						currentVideoTrack.setAspectRatioContainer(MI.get(video, i, "DisplayAspectRatio/String"));
+						currentVideoTrack.setAspectRatioVideoTrack(MI.get(video, i, "DisplayAspectRatio_Original/String"));
+						currentVideoTrack.setFrameRate(getFPSValue(MI.get(video, i, "FrameRate")));
+						currentVideoTrack.setFrameRateOriginal(MI.get(video, i, "FrameRate_Original"));
+						currentVideoTrack.setFrameRateMode(getFrameRateModeValue(MI.get(video, i, "FrameRate_Mode")));
+						currentVideoTrack.setFrameRateModeRaw(MI.get(video, i, "FrameRate_Mode"));
+						currentVideoTrack.setReferenceFrameCount(getReferenceFrameCount(MI.get(video, i, "Format_Settings_RefFrames/String")));
+						currentVideoTrack.setTitle(MI.get(video, i, "Title"));
 						value = MI.get(video, i, "Format_Settings_QPel");
 						if (!value.isEmpty()) {
-							media.putExtra(FormatConfiguration.MI_QPEL, value);
+							currentVideoTrack.putExtra(FormatConfiguration.MI_QPEL, value);
 						}
 
 						value = MI.get(video, i, "Format_Settings_GMC");
 						if (!value.isEmpty()) {
-							media.putExtra(FormatConfiguration.MI_GMC, value);
+							currentVideoTrack.putExtra(FormatConfiguration.MI_GMC, value);
 						}
 
 						value = MI.get(video, i, "Format_Settings_GOP");
 						if (!value.isEmpty()) {
-							media.putExtra(FormatConfiguration.MI_GOP, value);
+							currentVideoTrack.putExtra(FormatConfiguration.MI_GOP, value);
 						}
 
-						media.setMuxingMode(MI.get(video, i, "MuxingMode"));
+						currentVideoTrack.setMuxingMode(MI.get(video, i, "MuxingMode"));
 						if (!media.isEncrypted()) {
-							media.setEncrypted("encrypted".equals(MI.get(video, i, "Encryption")));
+							currentVideoTrack.setEncrypted("encrypted".equals(MI.get(video, i, "Encryption")));
 						}
 
 						value = MI.get(video, i, "BitDepth");
 						if (!value.isEmpty()) {
 							try {
-								media.setVideoBitDepth(Integer.parseInt(value));
+								currentVideoTrack.setBitDepth(Integer.parseInt(value));
 							} catch (NumberFormatException nfe) {
 								LOGGER.debug("Could not parse bits per sample \"" + value + "\"");
 							}
 						}
 
 						value = MI.get(video, i, "Format_Profile");
-						if (!value.isEmpty() && media.getCodecV() != null && media.getCodecV().equals(FormatConfiguration.H264)) {
-							media.setAvcLevel(getAvcLevel(value));
-							media.setH264Profile(getAvcProfile(value));
+						if (!value.isEmpty()) {
+							currentVideoTrack.setCodecLevel(getAvcLevel(value));
+							currentVideoTrack.setCodecProfile(getAvcProfile(value));
+						}
+
+						value = MI.get(video, i, "Format_Level");
+						if (!value.isEmpty()) {
+							currentVideoTrack.setCodecLevel(value);
 						}
 
 						if (parseLogger != null) {
 							parseLogger.logVideoTrackColumns(i);
 						}
+						addVideo(currentVideoTrack, media);
 					}
 				}
 			}
@@ -341,10 +350,10 @@ public class MediaInfoParser {
 			if (audioTracks > 0) {
 				for (int i = 0; i < audioTracks; i++) {
 					currentAudioTrack = new DLNAMediaAudio();
-					setFormat(audio, media, currentAudioTrack, MI.get(audio, i, "Format/String"), file);
-					setFormat(audio, media, currentAudioTrack, MI.get(audio, i, "Format_Version"), file);
-					setFormat(audio, media, currentAudioTrack, MI.get(audio, i, "Format_Profile"), file);
-					setFormat(audio, media, currentAudioTrack, MI.get(audio, i, "CodecID"), file);
+					setAudioFormat(media, currentAudioTrack, MI.get(audio, i, "Format/String"), file);
+					setAudioFormat(media, currentAudioTrack, MI.get(audio, i, "Format_Version"), file);
+					setAudioFormat(media, currentAudioTrack, MI.get(audio, i, "Format_Profile"), file);
+					setAudioFormat(media, currentAudioTrack, MI.get(audio, i, "CodecID"), file);
 					value = MI.get(audio, i, "CodecID_Description");
 					if (isNotBlank(value) && value.startsWith("Windows Media Audio 10")) {
 						currentAudioTrack.setCodecA(FormatConfiguration.WMA10);
@@ -430,7 +439,7 @@ public class MediaInfoParser {
 						if (value.contains("(0x") && !FormatConfiguration.OGG.equals(media.getContainer())) {
 							currentAudioTrack.setId(getSpecificID(value));
 						} else {
-							currentAudioTrack.setId(media.getAudioTracksList().size());
+							currentAudioTrack.setId(media.getAudioTracks().size());
 						}
 					}
 
@@ -481,9 +490,10 @@ public class MediaInfoParser {
 				}
 
 				if (parseByMediainfo) {
-					setFormat(image, media, currentAudioTrack, MI.get(image, 0, "Format"), file);
-					media.setWidth(getPixelValue(MI.get(image, 0, "Width")));
-					media.setHeight(getPixelValue(MI.get(image, 0, "Height")));
+					setImageFormat(media, MI.get(image, 0, "Format"), file);
+					int width = getPixelValue(MI.get(image, 0, "Width"));
+					int height = getPixelValue(MI.get(image, 0, "Height"));
+					//FIXME : set image
 				}
 
 				if (parseLogger != null) {
@@ -561,7 +571,7 @@ public class MediaInfoParser {
 				) {
 					media.setContainer(FormatConfiguration.ASF);
 				} else {
-					for (DLNAMediaAudio audioTrack : media.getAudioTracksList()) {
+					for (DLNAMediaAudio audioTrack : media.getAudioTracks()) {
 						if (
 							audioTrack.getCodecA() != null &&
 							!audioTrack.getCodecA().equals(FormatConfiguration.WMA) &&
@@ -645,10 +655,6 @@ public class MediaInfoParser {
 				media.setContainer(DLNAMediaLang.UND);
 			}
 
-			if (media.getCodecV() == null) {
-				media.setCodecV(DLNAMediaLang.UND);
-			}
-
 			media.setMediaparsed(true);
 		}
 	}
@@ -678,6 +684,18 @@ public class MediaInfoParser {
 		}
 	}
 
+	private static void addVideo(DLNAMediaVideo currentVideoTrack, DLNAMediaInfo media) {
+		if (isBlank(currentVideoTrack.getLang())) {
+			currentVideoTrack.setLang(DLNAMediaLang.UND);
+		}
+
+		if (isBlank(currentVideoTrack.getCodec())) {
+			currentVideoTrack.setCodec(DLNAMediaLang.UND);
+		}
+
+		media.getVideoTracks().add(currentVideoTrack);
+	}
+
 	private static void addAudio(DLNAMediaAudio currentAudioTrack, DLNAMediaInfo media) {
 		if (isBlank(currentAudioTrack.getLang())) {
 			currentAudioTrack.setLang(DLNAMediaLang.UND);
@@ -687,7 +705,7 @@ public class MediaInfoParser {
 			currentAudioTrack.setCodecA(DLNAMediaLang.UND);
 		}
 
-		media.getAudioTracksList().add(currentAudioTrack);
+		media.getAudioTracks().add(currentAudioTrack);
 	}
 
 	private static void addSub(DLNAMediaSubtitle currentSubTrack, DLNAMediaInfo media) {
@@ -700,6 +718,22 @@ public class MediaInfoParser {
 		}
 
 		media.addSubtitlesTrack(currentSubTrack);
+	}
+
+	protected static void setGeneralFormat(DLNAMediaInfo media, String value, File file) {
+		setFormat(StreamKind.GENERAL, media, null, null, value, file);
+	}
+
+	protected static void setVideoFormat(DLNAMediaInfo media, DLNAMediaVideo video, String value, File file) {
+		setFormat(StreamKind.VIDEO, media, video, null, value, file);
+	}
+
+	protected static void setAudioFormat(DLNAMediaInfo media, DLNAMediaAudio audio, String value, File file) {
+		setFormat(StreamKind.AUDIO, media, null, audio, value, file);
+	}
+
+	private static void setImageFormat(DLNAMediaInfo media, String value, File file) {
+		setFormat(StreamKind.IMAGE, media, null, null, value, file);
 	}
 
 	/**
@@ -721,7 +755,7 @@ public class MediaInfoParser {
 	 * @todo Split the values by streamType to make the logic more clear
 	 *       with less negative statements.
 	 */
-	protected static void setFormat(StreamKind streamType, DLNAMediaInfo media, DLNAMediaAudio audio, String value, File file) {
+	protected static void setFormat(StreamKind streamType, DLNAMediaInfo media, DLNAMediaVideo video, DLNAMediaAudio audio, String value, File file) {
 		if (isBlank(value)) {
 			return;
 		}
@@ -1060,15 +1094,15 @@ public class MediaInfoParser {
 		} else if (value.equals("tiff")) {
 			format = FormatConfiguration.TIFF;
 		} else if (containsIgnoreCase(value, "@l") && streamType == StreamKind.VIDEO) {
-			media.setAvcLevel(getAvcLevel(value));
-			media.setH264Profile(getAvcProfile(value));
+			video.setCodecLevel(getAvcLevel(value));
+			video.setCodecProfile(getAvcProfile(value));
 		}
 
 		if (format != null) {
 			if (streamType == StreamKind.GENERAL) {
 				media.setContainer(format);
 			} else if (streamType == StreamKind.VIDEO) {
-				media.setCodecV(format);
+				video.setCodec(format);
 			} else if (streamType == StreamKind.AUDIO) {
 				audio.setCodecA(format);
 			}

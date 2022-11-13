@@ -27,6 +27,7 @@ import net.pms.dlna.DLNAMediaChapter;
 import net.pms.dlna.DLNAMediaInfo;
 import net.pms.dlna.DLNAMediaLang;
 import net.pms.dlna.DLNAMediaSubtitle;
+import net.pms.dlna.DLNAMediaVideo;
 import net.pms.formats.v2.SubtitleType;
 import net.pms.util.StringUtil;
 import org.slf4j.Logger;
@@ -219,9 +220,10 @@ public class FFmpegParser {
 							}
 						}
 
-						media.getAudioTracksList().add(audio);
+						media.getAudioTracks().add(audio);
 					} else if (line.contains("Video:")) {
 						StringTokenizer st = new StringTokenizer(line, ",");
+						DLNAMediaVideo video = new DLNAMediaVideo();
 						while (st.hasMoreTokens()) {
 							String token = st.nextToken().trim();
 							if (token.startsWith("Stream")) {
@@ -236,46 +238,46 @@ public class FFmpegParser {
 									codec = token.substring(positionAfterVideoString);
 								}
 
-								media.setCodecV(codec);
-								media.setVideoTrackCount(media.getVideoTrackCount() + 1);
+								video.setCodec(codec);
 							} else if ((token.contains("tbc") || token.contains("tb(c)"))) {
 								// A/V sync issues with newest FFmpeg, due to the new tbr/tbn/tbc outputs
 								// Priority to tb(c)
 								String frameRateDoubleString = token.substring(0, token.indexOf("tb")).trim();
 								try {
 									// tbc taken into account only if different than tbr
-									if (!frameRateDoubleString.equals(media.getFrameRate())) {
+									if (!frameRateDoubleString.equals(video.getFrameRate())) {
 										Double frameRateDouble = Double.valueOf(frameRateDoubleString);
-										media.setFrameRate(String.format(Locale.ENGLISH, "%.2f", frameRateDouble / 2));
+										video.setFrameRate(String.format(Locale.ENGLISH, "%.2f", frameRateDouble / 2));
 									}
 								} catch (NumberFormatException nfe) {
 									// Could happen if tbc is "1k" or something like that, no big deal
 									LOGGER.debug("Could not parse frame rate \"" + frameRateDoubleString + "\"");
 								}
 
-							} else if ((token.contains("tbr") || token.contains("tb(r)")) && media.getFrameRate() == null) {
-								media.setFrameRate(token.substring(0, token.indexOf("tb")).trim());
-							} else if ((token.contains("fps") || token.contains("fps(r)")) && media.getFrameRate() == null) { // dvr-ms ?
-								media.setFrameRate(token.substring(0, token.indexOf("fps")).trim());
+							} else if ((token.contains("tbr") || token.contains("tb(r)")) && video.getFrameRate() == null) {
+								video.setFrameRate(token.substring(0, token.indexOf("tb")).trim());
+							} else if ((token.contains("fps") || token.contains("fps(r)")) && video.getFrameRate() == null) { // dvr-ms ?
+								video.setFrameRate(token.substring(0, token.indexOf("fps")).trim());
 							} else if (token.indexOf('x') > -1 && !token.contains("max")) {
 								String resolution = token.trim();
 								if (resolution.contains(" [")) {
 									resolution = resolution.substring(0, resolution.indexOf(" ["));
 								}
 								try {
-									media.setWidth(Integer.parseInt(resolution.substring(0, resolution.indexOf('x'))));
+									video.setWidth(Integer.parseInt(resolution.substring(0, resolution.indexOf('x'))));
 								} catch (NumberFormatException nfe) {
 									LOGGER.debug("Could not parse width from \"" + resolution.substring(0, resolution.indexOf('x')) + "\"");
 								}
 								try {
-									media.setHeight(Integer.parseInt(resolution.substring(resolution.indexOf('x') + 1)));
+									video.setHeight(Integer.parseInt(resolution.substring(resolution.indexOf('x') + 1)));
 								} catch (NumberFormatException nfe) {
 									LOGGER.debug("Could not parse height from \"" + resolution.substring(resolution.indexOf('x') + 1) + "\"");
 								}
 							}
 						}
+						media.getVideoTracks().add(video);
 					} else if (line.contains("Subtitle:")) {
-						DLNAMediaSubtitle lang = new DLNAMediaSubtitle();
+						DLNAMediaSubtitle subtitle = new DLNAMediaSubtitle();
 						// $ ffmpeg -codecs | grep "^...S"
 						// ..S... = Subtitle codec
 						// DES... ass                  ASS (Advanced SSA) subtitle
@@ -301,39 +303,39 @@ public class FFmpegParser {
 						// D.S... webvtt               WebVTT subtitle
 						// DES... xsub                 XSUB
 						if (line.contains("srt") || line.contains("subrip")) {
-							lang.setType(SubtitleType.SUBRIP);
+							subtitle.setType(SubtitleType.SUBRIP);
 						} else if (line.contains(" text")) {
 							// excludes dvb_teletext, mov_text, realtext
-							lang.setType(SubtitleType.TEXT);
+							subtitle.setType(SubtitleType.TEXT);
 						} else if (line.contains("microdvd")) {
-							lang.setType(SubtitleType.MICRODVD);
+							subtitle.setType(SubtitleType.MICRODVD);
 						} else if (line.contains("sami")) {
-							lang.setType(SubtitleType.SAMI);
+							subtitle.setType(SubtitleType.SAMI);
 						} else if (line.contains("ass") || line.contains("ssa")) {
-							lang.setType(SubtitleType.ASS);
+							subtitle.setType(SubtitleType.ASS);
 						} else if (line.contains("dvd_subtitle")) {
-							lang.setType(SubtitleType.VOBSUB);
+							subtitle.setType(SubtitleType.VOBSUB);
 						} else if (line.contains("xsub")) {
-							lang.setType(SubtitleType.DIVX);
+							subtitle.setType(SubtitleType.DIVX);
 						} else if (line.contains("mov_text")) {
-							lang.setType(SubtitleType.TX3G);
+							subtitle.setType(SubtitleType.TX3G);
 						} else if (line.contains("webvtt")) {
-							lang.setType(SubtitleType.WEBVTT);
+							subtitle.setType(SubtitleType.WEBVTT);
 						} else if (line.contains("eia_608")) {
-							lang.setType(SubtitleType.EIA608);
+							subtitle.setType(SubtitleType.EIA608);
 						} else if (line.contains("dvb_subtitle")) {
-							lang.setType(SubtitleType.DVBSUB);
+							subtitle.setType(SubtitleType.DVBSUB);
 						} else {
-							lang.setType(SubtitleType.UNKNOWN);
+							subtitle.setType(SubtitleType.UNKNOWN);
 						}
 						int a = line.indexOf('(');
 						int b = line.indexOf("):", a);
 						if (a > -1 && b > a) {
-							lang.setLang(line.substring(a + 1, b));
+							subtitle.setLang(line.substring(a + 1, b));
 						} else {
-							lang.setLang(DLNAMediaLang.UND);
+							subtitle.setLang(DLNAMediaLang.UND);
 						}
-						lang.setId(subId++);
+						subtitle.setId(subId++);
 						int fFmpegMetaDataNr = fFmpegMetaData.nextIndex();
 						if (fFmpegMetaDataNr > -1) {
 							line = lines.get(fFmpegMetaDataNr);
@@ -346,7 +348,7 @@ public class FFmpegParser {
 									int aa = line.indexOf(": ");
 									int bb = line.length();
 									if (aa > -1 && bb > aa) {
-										lang.setSubtitlesTrackTitleFromMetadata(line.substring(aa + 2, bb));
+										subtitle.setSubtitlesTrackTitleFromMetadata(line.substring(aa + 2, bb));
 										break;
 									}
 								} else {
@@ -355,7 +357,7 @@ public class FFmpegParser {
 								}
 							}
 						}
-						media.getSubtitlesTracks().add(lang);
+						media.getSubtitlesTracks().add(subtitle);
 					} else if (line.contains("Chapters:")) {
 						int fFmpegMetaDataNr = fFmpegMetaData.nextIndex();
 						if (fFmpegMetaDataNr > -1) {

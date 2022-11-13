@@ -164,8 +164,9 @@ public class MediaDatabase extends Database {
 		dropTableAndConstraint(connection, MediaTableVideoMetadataRatings.TABLE_NAME);
 		dropTableAndConstraint(connection, MediaTableVideoMetadataReleased.TABLE_NAME);
 
-		// Audio Metadata
+		// Audio/video Metadata
 		dropTableAndConstraint(connection, MediaTableAudiotracks.TABLE_NAME);
+		dropTableAndConstraint(connection, MediaTableVideotracks.TABLE_NAME);
 	}
 
 	/**
