@@ -71,7 +71,7 @@ public abstract class VirtualVideoAction extends DLNAResource {
 		DLNAMediaVideo video = new DLNAMediaVideo();
 		mediaInfo.setMimeType("video/mpeg");
 		video.setCodec("mpeg2");
-		mediaInfo.getVideoTracks().add(video);
+		mediaInfo.addVideoTrack(video);
 		mediaInfo.setMediaparsed(true);
 
 		setMedia(mediaInfo);

@@ -201,14 +201,14 @@ public class DLNAMediaSubtitle extends DLNAMediaLang implements Cloneable {
 					}
 
 					// Set the detected language if is isn't already set
-					if (lang == null || DLNAMediaLang.UND.equals(lang)) {
+					if (isLangUndefined()) {
 						String tmpLanguage = match.getLanguage();
 						if (isNotBlank(tmpLanguage)) {
-							lang = tmpLanguage;
+							setLang(tmpLanguage);
 						}
 					}
 
-					LOGGER.debug("Set detected charset \"{}\" and language \"{}\" for {}", subsCharacterSet, lang, externalFile);
+					LOGGER.debug("Set detected charset \"{}\" and language \"{}\" for {}", subsCharacterSet, getLang(), externalFile);
 				} else {
 					subsCharacterSet = null;
 					LOGGER.debug("No charset detected for {}", externalFile);

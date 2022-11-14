@@ -129,7 +129,7 @@ public class HlsHelper {
 			//add audio languages
 			List<HlsAudioConfiguration> audioGroups = new ArrayList<>();
 			DLNAMediaAudio mediaAudioDefault = null;
-			if (!mediaVideo.getAudioTracks().isEmpty()) {
+			if (mediaVideo.hasAudio()) {
 				//try to find the prefered language
 				mediaAudioDefault = null;
 				StringTokenizer st = new StringTokenizer(CONFIGURATION.getAudioLanguages(), ",");

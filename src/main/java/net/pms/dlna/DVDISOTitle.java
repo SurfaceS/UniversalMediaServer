@@ -382,7 +382,7 @@ public class DVDISOTitle extends DLNAResource {
 		if (matcher.find()) {
 			DLNAMediaAudio audio = new DLNAMediaAudio();
 			try {
-				audio.setTrack(Integer.parseInt(matcher.group("StreamNumber")));
+				audio.setId(Integer.parseInt(matcher.group("StreamNumber")));
 			} catch (NumberFormatException e) {
 				LOGGER.error(
 					"Could not parse audio stream number \"{}\": {}",
@@ -399,39 +399,39 @@ public class DVDISOTitle extends DLNAResource {
 			String languageCode = Iso639.getISOCode(matcher.group("Language"));
 			audio.setLang(isBlank(languageCode) ? DLNAMediaLang.UND : languageCode);
 			try {
-				audio.setId(Integer.parseInt(matcher.group("AID")));
+				audio.setStreamId(Integer.parseInt(matcher.group("AID")));
 			} catch (NumberFormatException e) {
 				LOGGER.error("Could not parse audio id \"{}\": {}", matcher.group("AID"), e.getMessage());
 				LOGGER.trace("", e);
 			}
-			if (audio.getId() >= MPlayerDvdAudioStreamTypes.FIRST_LPCM_AID) {
+			if (audio.getStreamId() >= MPlayerDvdAudioStreamTypes.FIRST_LPCM_AID) {
 				if (!FormatConfiguration.LPCM.equals(audio.getCodecA())) {
 					LOGGER.warn(
 						"Unexpected error parsing DVD audio stream codec. AID dictates LPCM while codec is {}",
-						audio.getId(),
+						audio.getStreamId(),
 						audio.getCodecA()
 					);
 				}
-			} else if (audio.getId() >= MPlayerDvdAudioStreamTypes.FIRST_DTS_AID) {
+			} else if (audio.getStreamId() >= MPlayerDvdAudioStreamTypes.FIRST_DTS_AID) {
 				if (!FormatConfiguration.DTS.equals(audio.getCodecA())) {
 					LOGGER.warn(
 						"Unexpected error parsing DVD audio stream codec. AID dictates DTS while codec is {}",
-						audio.getId(),
+						audio.getStreamId(),
 						audio.getCodecA()
 					);
 				}
-			} else if (audio.getId() >= MPlayerDvdAudioStreamTypes.FIRST_AC3_AID) {
+			} else if (audio.getStreamId() >= MPlayerDvdAudioStreamTypes.FIRST_AC3_AID) {
 				if (!FormatConfiguration.AC3.equals(audio.getCodecA())) {
 					LOGGER.warn(
 						"Unexpected error parsing DVD audio stream codec. AID dictates AC3 while codec is {}",
-						audio.getId(),
+						audio.getStreamId(),
 						audio.getCodecA()
 					);
 				}
 			} else if (!FormatConfiguration.MP2.equals(audio.getCodecA())) {
 				LOGGER.warn(
 					"Unexpected error parsing DVD audio stream codec. AID dictates MP2 while codec is {}",
-					audio.getId(),
+					audio.getStreamId(),
 					audio.getCodecA()
 				);
 			}

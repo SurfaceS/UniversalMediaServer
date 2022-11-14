@@ -1258,10 +1258,10 @@ public class MEncoderVideo extends Engine {
 			}
 		}
 
-		if (!dtsRemux && !encodedAudioPassthrough && !pcm && !isAviSynthEngine() && params.getMediaAudio() != null && media.getAudioTracks().size() > 1) {
+		if (!dtsRemux && !encodedAudioPassthrough && !pcm && !isAviSynthEngine() && params.getMediaAudio() != null && media.getAudioTrackCount() > 1) {
 			cmdList.add("-aid");
 			boolean lavf = false; // TODO Need to add support for LAVF demuxing
-			cmdList.add("" + (lavf ? params.getMediaAudio().getId() + 1 : params.getMediaAudio().getId()));
+			cmdList.add("" + (lavf ? params.getMediaAudio().getStreamId() + 1 : params.getMediaAudio().getStreamId()));
 		}
 
 		/*
@@ -1914,14 +1914,14 @@ public class MEncoderVideo extends Engine {
 				ffVideo.runInNewThread();
 
 				String aid = null;
-				if (media.getAudioTracks().size() > 1 && params.getMediaAudio() != null) {
+				if (media.getAudioTrackCount() > 1 && params.getMediaAudio() != null) {
 					if (media.getContainer() != null && (media.getContainer().equals(FormatConfiguration.AVI) || media.getContainer().equals(FormatConfiguration.FLV))) {
 						// TODO confirm (MP4s, OGMs and MOVs already tested: first aid is 0; AVIs: first aid is 1)
 						// For AVIs, FLVs and MOVs MEncoder starts audio tracks numbering from 1
-						aid = "" + (params.getMediaAudio().getId() + 1);
+						aid = "" + (params.getMediaAudio().getStreamId() + 1);
 					} else {
 						// Everything else from 0
-						aid = "" + params.getMediaAudio().getId();
+						aid = "" + params.getMediaAudio().getStreamId();
 					}
 				}
 

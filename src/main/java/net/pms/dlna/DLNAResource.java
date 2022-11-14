@@ -4033,7 +4033,7 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 	 * @return The resolved {@link DLNAMediaAudio} or {@code null}.
 	 */
 	public DLNAMediaAudio resolveAudioStream(Renderer renderer) {
-		if (media == null || media.getAudioTrackCount() == 0) {
+		if (media == null || !media.hasAudio()) {
 			LOGGER.trace("Found no audio track");
 			return null;
 		}

@@ -27,7 +27,6 @@ import javax.annotation.Nullable;
 import net.pms.Messages;
 import net.pms.configuration.UmsConfiguration;
 import net.pms.dlna.DLNAMediaInfo;
-import net.pms.dlna.DLNAMediaLang;
 import net.pms.dlna.DLNAResource;
 import net.pms.formats.Format;
 import net.pms.io.*;
@@ -502,13 +501,12 @@ public class VLCVideo extends Engine {
 		// Handle audio language
 		if (params.getMediaAudio() != null) {
 			// User specified language at the client, acknowledge it
-			if (params.getMediaAudio().getLang() == null || params.getMediaAudio().getLang().equals("und")) {
+			if (params.getMediaAudio().isLangUndefined()) {
 				// VLC doesn't understand "und", so try to get audio track by ID
 				cmdList.add("--audio-track=" + params.getMediaAudio().getId());
 			} else {
 				if (
-					isBlank(params.getMediaAudio().getLang()) ||
-					DLNAMediaLang.UND.equals(params.getMediaAudio().getLang()) ||
+					params.getMediaAudio().isLangUndefined() ||
 					"loc".equals(params.getMediaAudio().getLang())
 				) {
 					cmdList.add("--audio-track=-1");
@@ -552,7 +550,7 @@ public class VLCVideo extends Engine {
 						cmdList.add(externalSubtitlesFileName);
 					}
 				}
-			} else if (params.getMediaSubtitle().getLang() != null && !params.getMediaSubtitle().getLang().equals("und")) { // Load by ID (better)
+			} else if (!params.getMediaSubtitle().isLangUndefined()) { // Load by ID (better)
 				cmdList.add("--sub-track=" + params.getMediaSubtitle().getId());
 			} else { // VLC doesn't understand "und", but does understand a nonexistent track
 				cmdList.add("--sub-" + disableSuffix);

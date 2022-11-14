@@ -427,7 +427,7 @@ public class RequestV2 extends HTTPResource {
 						}
 						output.headers().set(HttpHeaders.Names.ACCEPT_RANGES, HttpHeaders.Values.BYTES);
 						output.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
-					} else if (dlna.getMedia() != null && dlna.getMedia().getMediaType() == MediaType.IMAGE && dlna.isCodeValid(dlna)) {
+					} else if (dlna.getMedia() != null && dlna.getMedia().isImage() && dlna.isCodeValid(dlna)) {
 						// This is a request for an image
 						Services.sleepManager().postponeSleep();
 						DLNAImageProfile imageProfile = ImagesUtil.parseImageRequest(fileName, null);

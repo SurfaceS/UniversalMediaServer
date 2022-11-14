@@ -20,12 +20,13 @@ import net.pms.util.Iso639;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * This class keeps track of the language information for subtitles or audio.
+ * This class keeps track of the language information for video, audio or subtitles.
  */
 public class DLNAMediaLang {
 	public static final String UND = "und";
 	private int id;
-	protected String lang;
+	private String lang;
+	private int streamId;
 
 	/**
 	 * A special ID value that indicates that the instance is just a placeholder
@@ -73,6 +74,22 @@ public class DLNAMediaLang {
 	}
 
 	/**
+	 * Returns the stream id on the container.
+	 *
+	 * @return The stream id on the container.
+	 */
+	public int getStreamId() {
+		return streamId;
+	}
+
+	/**
+	 * Set the stream id on the container.
+	 */
+	public void setStreamId(int value) {
+		this.streamId = value;
+	}
+
+	/**
 	 * Returns the IS0 639 language code for this language object. If you
 	 * require the full language name, use {@link #getLangFullName()} instead.
 	 * Special return values are "und" (for "undetermined") and "off"
@@ -96,4 +113,9 @@ public class DLNAMediaLang {
 	public void setLang(String lang) {
 		this.lang = lang;
 	}
+
+	public boolean isLangUndefined() {
+		return lang == null || "".equals(lang) || UND.equals(lang);
+	}
+
 }

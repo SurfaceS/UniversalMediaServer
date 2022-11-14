@@ -55,7 +55,8 @@ public class FFmpegParser {
 			}
 
 			boolean matches = false;
-			int langId = 0;
+			int videoId = 0;
+			int audioId = 0;
 			int subId = 0;
 			ListIterator<String> fFmpegMetaData = lines.listIterator();
 
@@ -123,7 +124,7 @@ public class FFmpegParser {
 						int a = line.indexOf('(');
 						int b = line.indexOf("):", a);
 						DLNAMediaAudio audio = new DLNAMediaAudio();
-						audio.setId(langId++);
+						audio.setId(audioId++);
 						if (a > -1 && b > a) {
 							audio.setLang(line.substring(a + 1, b));
 						} else {
@@ -136,7 +137,7 @@ public class FFmpegParser {
 						if (a > -1 && b > a + 3) {
 							String idString = line.substring(a + 3, b);
 							try {
-								audio.setId(Integer.parseInt(idString, 16));
+								audio.setStreamId(Integer.parseInt(idString, 16));
 							} catch (NumberFormatException nfe) {
 								LOGGER.debug("Error parsing Stream ID: " + idString);
 							}
@@ -220,10 +221,11 @@ public class FFmpegParser {
 							}
 						}
 
-						media.getAudioTracks().add(audio);
+						media.addAudioTrack(audio);
 					} else if (line.contains("Video:")) {
 						StringTokenizer st = new StringTokenizer(line, ",");
 						DLNAMediaVideo video = new DLNAMediaVideo();
+						video.setId(videoId++);
 						while (st.hasMoreTokens()) {
 							String token = st.nextToken().trim();
 							if (token.startsWith("Stream")) {
@@ -275,9 +277,10 @@ public class FFmpegParser {
 								}
 							}
 						}
-						media.getVideoTracks().add(video);
+						media.addVideoTrack(video);
 					} else if (line.contains("Subtitle:")) {
 						DLNAMediaSubtitle subtitle = new DLNAMediaSubtitle();
+						subtitle.setId(subId++);
 						// $ ffmpeg -codecs | grep "^...S"
 						// ..S... = Subtitle codec
 						// DES... ass                  ASS (Advanced SSA) subtitle
@@ -335,7 +338,6 @@ public class FFmpegParser {
 						} else {
 							subtitle.setLang(DLNAMediaLang.UND);
 						}
-						subtitle.setId(subId++);
 						int fFmpegMetaDataNr = fFmpegMetaData.nextIndex();
 						if (fFmpegMetaDataNr > -1) {
 							line = lines.get(fFmpegMetaDataNr);

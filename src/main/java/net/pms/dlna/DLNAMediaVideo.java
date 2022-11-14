@@ -46,7 +46,6 @@ public class DLNAMediaVideo extends DLNAMediaLang implements Cloneable {
 	private String stereoscopy;
 	private String aspectRatioContainer;
 	private String aspectRatioVideoTrack;
-	private int videoStreamIndex;
 	private boolean encrypted;
 
 	private final ReentrantReadWriteLock referenceFrameCountLock = new ReentrantReadWriteLock();
@@ -113,22 +112,6 @@ public class DLNAMediaVideo extends DLNAMediaLang implements Cloneable {
 		synchronized (codecProfileLock) {
 			codecProfile = value;
 		}
-	}
-
-	/**
-	 * Returns the video stream index on the container.
-	 *
-	 * @return The video stream index.
-	 */
-	public int getVideoStreamIndex() {
-		return videoStreamIndex;
-	}
-
-	/**
-	 * Set the video stream index on the container.
-	 */
-	public void setVideoStreamIndex(int streamId) {
-		this.videoStreamIndex = streamId;
 	}
 
 	public String getTitle() {
@@ -453,7 +436,7 @@ public class DLNAMediaVideo extends DLNAMediaLang implements Cloneable {
 	@Override
 	public String toString() {
 		StringBuilder result = new StringBuilder();
-		if (getLang() != null && !getLang().equals("und")) {
+		if (!isLangUndefined()) {
 			result.append("Id: ").append(getId());
 			result.append(", Language Code: ").append(getLang());
 		}

@@ -162,8 +162,8 @@ public class MEncoderVideo {
 				video.setWidth(1280);
 				video.setHeight(720);
 				video.setFrameRate("23.976");
-				fakemedia.getAudioTracks().add(audio);
-				fakemedia.getVideoTracks().add(video);
+				fakemedia.addAudioTrack(audio);
+				fakemedia.addVideoTrack(video);
 				fakemedia.setContainer("matroska");
 				fakemedia.setDuration(45d * 60);
 				String[] result = net.pms.encoders.MEncoderVideo.getSpecificCodecOptions(newCodecparam, fakemedia, new OutputParams(CONFIGURATION), "dummy.mpg", "dummy.srt", false, true);

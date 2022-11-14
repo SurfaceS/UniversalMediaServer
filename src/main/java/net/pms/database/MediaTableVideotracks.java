@@ -44,10 +44,16 @@ public class MediaTableVideotracks extends MediaTable {
 	public static final String TABLE_NAME = "VIDEOTRACKS";
 
 	private static final String COL_FILEID = "FILEID";
+	private static final String COL_WIDTH = "WIDTH";
+	private static final String COL_HEIGHT = "HEIGHT";
+
 	/**
 	 * COLUMNS with table name
 	 */
-	private static final String TABLE_COL_FILEID = TABLE_NAME + "." + COL_FILEID;
+	public static final String TABLE_COL_FILEID = TABLE_NAME + "." + COL_FILEID;
+	public static final String TABLE_COL_WIDTH = TABLE_NAME + "." + COL_WIDTH;
+	public static final String TABLE_COL_HEIGHT = TABLE_NAME + "." + COL_HEIGHT;
+
 	private static final String SQL_GET_ALL_FILEID = "SELECT * FROM " + TABLE_NAME + " WHERE " + TABLE_COL_FILEID + " = ?";
 
 	private static final int SIZE_LANG = 3;
@@ -108,8 +114,9 @@ public class MediaTableVideotracks extends MediaTable {
 		try (Statement statement = connection.createStatement()) {
 			StringBuilder sb = new StringBuilder();
 			sb.append("CREATE TABLE " + TABLE_NAME + " (");
-			sb.append("  VIDEO_STREAM_INDEX        INTEGER          NOT NULL");
-			sb.append(", FILEID                    BIGINT           NOT NULL");
+			sb.append("  FILEID                    BIGINT           NOT NULL");
+			sb.append(", ID                        INTEGER          NOT NULL");
+			sb.append(", STREAM_ID                 INTEGER          NOT NULL");
 			sb.append(", LANG                      VARCHAR(").append(SIZE_LANG).append(')');
 			sb.append(", TITLE                     VARCHAR(").append(SIZE_MAX).append(')');
 			sb.append(", CODEC                     VARCHAR(").append(SIZE_CODEC).append(')');
@@ -126,13 +133,14 @@ public class MediaTableVideotracks extends MediaTable {
 			sb.append(", STEREOSCOPY               VARCHAR(").append(SIZE_MAX).append(')');
 			sb.append(", MATRIX_COEFFICIENTS       VARCHAR(").append(SIZE_MATRIX_COEFFICIENTS).append(')');
 			sb.append(", BIT_DEPTH                 INTEGER");
-			sb.append(", SCAN_TYPE                 VARCHAR(").append(SIZE_MATRIX_COEFFICIENTS).append(')');
-			sb.append(", SCAN_ORDER                VARCHAR(").append(SIZE_MATRIX_COEFFICIENTS).append(')');
-			sb.append(", CONSTRAINT " + TABLE_NAME + "_PK PRIMARY KEY (FILEID, VIDEO_STREAM_INDEX)");
+			sb.append(", SCAN_TYPE                 VARCHAR(").append(SIZE_MAX).append(')');
+			sb.append(", SCAN_ORDER                VARCHAR(").append(SIZE_MAX).append(')');
+			sb.append(", CONSTRAINT " + TABLE_NAME + "_PK PRIMARY KEY (FILEID, ID)");
 			sb.append(", CONSTRAINT " + TABLE_NAME + "_" + COL_FILEID + "_FK FOREIGN KEY (" + COL_FILEID + ") REFERENCES " + MediaTableFiles.TABLE_NAME + "(" + MediaTableFiles.COL_ID + ") ON DELETE CASCADE");
 			sb.append(')');
 
 			executeUpdate(statement, sb.toString());
+			execute(connection, "CREATE INDEX " + TABLE_NAME + "_" + COL_FILEID + "_" + COL_WIDTH + "_" + COL_HEIGHT + " ON " + TABLE_NAME + "(" + COL_FILEID + ", " + COL_WIDTH + ", " + COL_HEIGHT + ")");
 		}
 	}
 
@@ -141,7 +149,7 @@ public class MediaTableVideotracks extends MediaTable {
 			return;
 		}
 
-		String columns = "FILEID, VIDEO_STREAM_INDEX, ID, LANG, TITLE, CODEC, CODEC_PROFILE, CODEC_LEVEL, " +
+		String columns = "FILEID, ID, STREAM_ID, LANG, TITLE, CODEC, CODEC_PROFILE, CODEC_LEVEL, " +
 					"WIDTH, HEIGHT, FRAMERATE, FRAMERATE_MODE, ASPECT_RATIO_CONTAINER, ASPECT_RATIO_VIDEOTRACK, " +
 					"REF_FRAMES, MUXING_MODE, STEREOSCOPY, MATRIX_COEFFICIENTS, BIT_DEPTH, SCAN_TYPE, SCAN_ORDER";
 
@@ -149,7 +157,7 @@ public class MediaTableVideotracks extends MediaTable {
 			PreparedStatement updateStatment = connection.prepareStatement(
 				"SELECT " + columns + " " +
 				"FROM " + TABLE_NAME + " " +
-				"WHERE FILEID = ? AND VIDEO_STREAM_INDEX = ?",
+				"WHERE FILEID = ? AND ID = ?",
 				ResultSet.TYPE_FORWARD_ONLY,
 				ResultSet.CONCUR_UPDATABLE
 			);
@@ -159,10 +167,10 @@ public class MediaTableVideotracks extends MediaTable {
 		) {
 			for (DLNAMediaVideo videoTrack : media.getVideoTracks()) {
 				updateStatment.setLong(1, fileId);
-				updateStatment.setInt(2, videoTrack.getVideoStreamIndex());
+				updateStatment.setInt(2, videoTrack.getId());
 				try (ResultSet rs = updateStatment.executeQuery()) {
 					if (rs.next()) {
-						rs.updateInt("ID", videoTrack.getId());
+						rs.updateInt("STREAM_ID", videoTrack.getStreamId());
 						rs.updateString("LANG", StringUtils.left(videoTrack.getLang(), SIZE_LANG));
 						rs.updateString("TITLE", StringUtils.left(videoTrack.getTitle(), SIZE_MAX));
 						rs.updateString("CODEC", StringUtils.left(videoTrack.getCodec(), SIZE_CODEC));
@@ -204,8 +212,8 @@ public class MediaTableVideotracks extends MediaTable {
 						int databaseColumnIterator = 0;
 						insertStatement.clearParameters();
 						insertStatement.setLong(++databaseColumnIterator, fileId);
-						insertStatement.setInt(++databaseColumnIterator, videoTrack.getVideoStreamIndex());
 						insertStatement.setInt(++databaseColumnIterator, videoTrack.getId());
+						insertStatement.setInt(++databaseColumnIterator, videoTrack.getStreamId());
 						insertStatement.setString(++databaseColumnIterator, StringUtils.left(videoTrack.getLang(), SIZE_LANG));
 						insertStatement.setString(++databaseColumnIterator, StringUtils.left(videoTrack.getTitle(), SIZE_MAX));
 						insertStatement.setString(++databaseColumnIterator, StringUtils.left(videoTrack.getCodec(), SIZE_CODEC));
@@ -259,8 +267,8 @@ public class MediaTableVideotracks extends MediaTable {
 			try (ResultSet rs = stmt.executeQuery()) {
 				while (rs.next()) {
 					DLNAMediaVideo video = new DLNAMediaVideo();
-					video.setVideoStreamIndex(rs.getInt("VIDEO_STREAM_INDEX"));
 					video.setId(rs.getInt("ID"));
+					video.setStreamId(rs.getInt("STREAM_ID"));
 					video.setLang(rs.getString("LANG"));
 					video.setTitle(rs.getString("TITLE"));
 					video.setCodec(rs.getString("CODEC"));
@@ -279,6 +287,7 @@ public class MediaTableVideotracks extends MediaTable {
 					video.setBitDepth(rs.getInt("BIT_DEPTH"));
 					video.setScanType(ScanType.typeOf(rs.getString("SCAN_TYPE")));
 					video.setScanOrder(ScanOrder.typeOf(rs.getString("SCAN_ORDER")));
+					LOGGER.trace("Adding video from the database: {}", video.toString());
 					result.add(video);
 				}
 			}

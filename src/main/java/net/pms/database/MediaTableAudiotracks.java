@@ -75,7 +75,7 @@ public class MediaTableAudiotracks extends MediaTable {
 	 * definition. Table upgrade SQL must also be added to
 	 * {@link #upgradeTable(Connection, int)}
 	 */
-	private static final int TABLE_VERSION = 8;
+	private static final int TABLE_VERSION = 9;
 
 	/**
 	 * Checks and creates or upgrades the table as needed.
@@ -106,20 +106,20 @@ public class MediaTableAudiotracks extends MediaTable {
 		for (int version = currentVersion; version < TABLE_VERSION; version++) {
 			LOGGER.trace(LOG_UPGRADING_TABLE, DATABASE_NAME, TABLE_NAME, version, version + 1);
 			switch (version) {
-				case 1:
+				case 1 -> {
 					if (!isColumnExist(connection, TABLE_NAME, COL_MBID_RECORD)) {
 						executeUpdate(connection, "ALTER TABLE " + TABLE_NAME + " ADD " + COL_MBID_RECORD + " UUID");
 					}
 					if (!isColumnExist(connection, TABLE_NAME, COL_MBID_TRACK)) {
 						executeUpdate(connection, "ALTER TABLE " + TABLE_NAME + " ADD " + COL_MBID_TRACK + " UUID");
 					}
-					break;
-				case 2:
+				}
+				case 2 -> {
 					if (!isColumnExist(connection, TABLE_NAME, COL_DISC)) {
 						executeUpdate(connection, "ALTER TABLE " + TABLE_NAME + " ADD " + COL_DISC + " INT");
 					}
-					break;
-				case 3:
+				}
+				case 3 -> {
 					if (isColumnExist(connection, TABLE_NAME, "YEAR")) {
 						LOGGER.trace("Deleting index IDXYEAR");
 						executeUpdate(connection, "DROP INDEX IF EXISTS IDXYEAR");
@@ -128,31 +128,30 @@ public class MediaTableAudiotracks extends MediaTable {
 						LOGGER.trace("Creating index IDX_AUDIO_YEAR");
 						executeUpdate(connection, "CREATE INDEX IDX_AUDIO_YEAR on " + TABLE_NAME + " (MEDIA_YEAR asc);");
 					}
-					break;
-				case 4:
+				}
+				case 4 -> {
 					if (!isColumnExist(connection, TABLE_NAME, COL_LIKE_SONG)) {
 						executeUpdate(connection, "ALTER TABLE " + TABLE_NAME + " ADD " + COL_LIKE_SONG + " BOOLEAN");
 						LOGGER.trace("Adding " + COL_LIKE_SONG + " to table " + TABLE_NAME);
 						executeUpdate(connection, "CREATE INDEX IDX_LIKE_SONG ON " + TABLE_NAME + " (" + COL_LIKE_SONG + ");");
 						LOGGER.trace("Indexing column " + COL_LIKE_SONG + " on table " + TABLE_NAME);
 					}
-					break;
-				case 5:
+				}
+				case 5 -> {
 					executeUpdate(connection, "CREATE INDEX IDX_MBID ON " + TABLE_NAME + " (MBID_TRACK);");
 					LOGGER.trace("Indexing column MBID_TRACK on table " + TABLE_NAME);
-					break;
-				case 6:
+				}
+				case 6 -> {
 					if (!isColumnExist(connection, TABLE_NAME, "RATING")) {
 						executeUpdate(connection, "ALTER TABLE " + TABLE_NAME + " ADD RATING INT");
 						LOGGER.trace("added column RATING on table " + TABLE_NAME);
 						executeUpdate(connection, "CREATE INDEX IDX_RATING ON " + TABLE_NAME + " (RATING);");
 						LOGGER.trace("Indexing column RATING on table " + TABLE_NAME);
 					}
-					break;
-				case 7:
+				}
+				case 7 -> {
 					connection.setAutoCommit(false);
-					try (
-						Statement stmt =  DATABASE.getConnection().createStatement()) {
+					try (Statement stmt =  DATABASE.getConnection().createStatement()) {
 						stmt.execute("ALTER TABLE " + TABLE_NAME + " ADD COLUMN AUDIOTRACK_ID INTEGER AUTO_INCREMENT");
 						stmt.execute("UPDATE " + TABLE_NAME + " SET AUDIOTRACK_ID = ROWNUM()");
 						stmt.execute("SET @mv = SELECT MAX(AUDIOTRACK_ID) FROM " + TABLE_NAME + " + 1");
@@ -162,11 +161,15 @@ public class MediaTableAudiotracks extends MediaTable {
 					} catch (Exception e) {
 						LOGGER.warn("Upgrade failed", e);
 					}
-					break;
-				default:
+				}
+				case 8 -> {
+					executeUpdate(connection, "ALTER TABLE " + TABLE_NAME + " ADD COLUMN IF NOT EXISTS STREAM_ID INTEGER");
+				}
+				default -> {
 					throw new IllegalStateException(
 						getMessage(LOG_UPGRADING_TABLE_MISSING, DATABASE_NAME, TABLE_NAME, version, TABLE_VERSION)
 					);
+				}
 			}
 		}
 		try {
@@ -183,8 +186,9 @@ public class MediaTableAudiotracks extends MediaTable {
 		try (Statement statement = connection.createStatement()) {
 			StringBuilder sb = new StringBuilder();
 			sb.append("CREATE TABLE " + TABLE_NAME + " (");
-			sb.append("  ID                INTEGER          NOT NULL");
-			sb.append(", FILEID            BIGINT           NOT NULL");
+			sb.append("  FILEID            BIGINT           NOT NULL");
+			sb.append(", ID                INTEGER          NOT NULL");
+			sb.append(", STREAM_ID         INTEGER");
 			sb.append(", MBID_RECORD       UUID");
 			sb.append(", MBID_TRACK        UUID");
 			sb.append(", LANG              VARCHAR(").append(SIZE_LANG).append(')');
@@ -242,17 +246,17 @@ public class MediaTableAudiotracks extends MediaTable {
 	}
 
 	protected static void insertOrUpdateAudioTracks(Connection connection, long fileId, DLNAMediaInfo media) throws SQLException {
-		if (connection == null || fileId < 0 || media == null || media.getAudioTrackCount() < 1) {
+		if (connection == null || fileId < 0 || media == null || !media.hasAudio()) {
 			return;
 		}
 
-		String columns = "FILEID, ID, LANG, TITLE, NRAUDIOCHANNELS, SAMPLEFREQ, CODECA, BITSPERSAMPLE, " +
+		String columns = "FILEID, ID, STREAM_ID, LANG, TITLE, NRAUDIOCHANNELS, SAMPLEFREQ, CODECA, BITSPERSAMPLE, " +
 			"ALBUM, ARTIST, ALBUMARTIST, SONGNAME, GENRE, MEDIA_YEAR, TRACK, DELAY, MUXINGMODE, BITRATE, MBID_RECORD, MBID_TRACK, DISC, RATING";
 
 		try (
 			PreparedStatement updateStatment = connection.prepareStatement(
 				"SELECT " +
-					"FILEID, ID, MBID_RECORD, MBID_TRACK, LANG, TITLE, NRAUDIOCHANNELS, SAMPLEFREQ, CODECA, " +
+					"FILEID, ID, STREAM_ID, MBID_RECORD, MBID_TRACK, LANG, TITLE, NRAUDIOCHANNELS, SAMPLEFREQ, CODECA, " +
 					"BITSPERSAMPLE, ALBUM, ARTIST, ALBUMARTIST, SONGNAME, GENRE, MEDIA_YEAR, TRACK, DISC, " +
 					"DELAY, MUXINGMODE, BITRATE, RATING " +
 				"FROM " + TABLE_NAME + " " +
@@ -270,6 +274,7 @@ public class MediaTableAudiotracks extends MediaTable {
 				updateStatment.setInt(2, audioTrack.getId());
 				try (ResultSet rs = updateStatment.executeQuery()) {
 					if (rs.next()) {
+						rs.updateInt("STREAM_ID", audioTrack.getStreamId());
 						//make sure mbid are uuids
 						if (StringUtils.isEmpty(audioTrack.getMbidRecord())) {
 							rs.updateNull("MBID_RECORD");
@@ -325,60 +330,62 @@ public class MediaTableAudiotracks extends MediaTable {
 						}
 						rs.updateRow();
 					} else {
+						int databaseColumnIterator = 0;
 						insertStatement.clearParameters();
-						insertStatement.setLong(1, fileId);
-						insertStatement.setInt(2, audioTrack.getId());
-						insertStatement.setString(3, left(audioTrack.getLang(), SIZE_LANG));
-						insertStatement.setString(4, left(audioTrack.getAudioTrackTitleFromMetadata(), SIZE_MAX));
-						insertStatement.setInt(5, audioTrack.getAudioProperties().getNumberOfChannels());
-						insertStatement.setString(6, left(audioTrack.getSampleFrequency(), SIZE_SAMPLEFREQ));
-						insertStatement.setString(7, left(audioTrack.getCodecA(), SIZE_CODECA));
-						insertStatement.setInt(8, audioTrack.getBitsperSample());
-						insertStatement.setString(9, left(trimToEmpty(audioTrack.getAlbum()), SIZE_MAX));
-						insertStatement.setString(10, left(trimToEmpty(audioTrack.getArtist()), SIZE_MAX));
+						insertStatement.setLong(++databaseColumnIterator, fileId);
+						insertStatement.setInt(++databaseColumnIterator, audioTrack.getId());
+						insertStatement.setInt(++databaseColumnIterator, audioTrack.getStreamId());
+						insertStatement.setString(++databaseColumnIterator, left(audioTrack.getLang(), SIZE_LANG));
+						insertStatement.setString(++databaseColumnIterator, left(audioTrack.getAudioTrackTitleFromMetadata(), SIZE_MAX));
+						insertStatement.setInt(++databaseColumnIterator, audioTrack.getAudioProperties().getNumberOfChannels());
+						insertStatement.setString(++databaseColumnIterator, left(audioTrack.getSampleFrequency(), SIZE_SAMPLEFREQ));
+						insertStatement.setString(++databaseColumnIterator, left(audioTrack.getCodecA(), SIZE_CODECA));
+						insertStatement.setInt(++databaseColumnIterator, audioTrack.getBitsperSample());
+						insertStatement.setString(++databaseColumnIterator, left(trimToEmpty(audioTrack.getAlbum()), SIZE_MAX));
+						insertStatement.setString(++databaseColumnIterator, left(trimToEmpty(audioTrack.getArtist()), SIZE_MAX));
 
 						//Special case for album artist. If it's empty, we want to insert NULL (for quicker retrieval)
 						String albumartist = left(trimToEmpty(audioTrack.getAlbumArtist()), SIZE_MAX);
 						if (albumartist.isEmpty()) {
-							insertStatement.setNull(11, Types.VARCHAR);
+							insertStatement.setNull(++databaseColumnIterator, Types.VARCHAR);
 						} else {
-							insertStatement.setString(11, albumartist);
+							insertStatement.setString(++databaseColumnIterator, albumartist);
 						}
 
-						insertStatement.setString(12, left(trimToEmpty(audioTrack.getSongname()), SIZE_MAX));
-						insertStatement.setString(13, left(trimToEmpty(audioTrack.getGenre()), SIZE_GENRE));
-						insertStatement.setInt(14, audioTrack.getYear());
-						insertStatement.setInt(15, audioTrack.getTrack());
-						insertStatement.setInt(16, audioTrack.getAudioProperties().getAudioDelay());
-						insertStatement.setString(17, left(trimToEmpty(audioTrack.getMuxingModeAudio()), SIZE_MUXINGMODE));
-						insertStatement.setInt(18, audioTrack.getBitRate());
+						insertStatement.setString(++databaseColumnIterator, left(trimToEmpty(audioTrack.getSongname()), SIZE_MAX));
+						insertStatement.setString(++databaseColumnIterator, left(trimToEmpty(audioTrack.getGenre()), SIZE_GENRE));
+						insertStatement.setInt(++databaseColumnIterator, audioTrack.getYear());
+						insertStatement.setInt(++databaseColumnIterator, audioTrack.getTrack());
+						insertStatement.setInt(++databaseColumnIterator, audioTrack.getAudioProperties().getAudioDelay());
+						insertStatement.setString(++databaseColumnIterator, left(trimToEmpty(audioTrack.getMuxingModeAudio()), SIZE_MUXINGMODE));
+						insertStatement.setInt(++databaseColumnIterator, audioTrack.getBitRate());
 						if (StringUtils.isEmpty(audioTrack.getMbidRecord())) {
-							insertStatement.setNull(19, Types.OTHER);
+							insertStatement.setNull(++databaseColumnIterator, Types.OTHER);
 						} else {
 							try {
 								UUID mbidRecord = UUID.fromString(trimToEmpty(audioTrack.getMbidRecord()));
-								insertStatement.setObject(19, mbidRecord);
+								insertStatement.setObject(++databaseColumnIterator, mbidRecord);
 							} catch (IllegalArgumentException e) {
 								LOGGER.trace("UUID not well formated, store null value");
-								insertStatement.setNull(19, Types.OTHER);
+								insertStatement.setNull(++databaseColumnIterator, Types.OTHER);
 							}
 						}
 						if (StringUtils.isEmpty(audioTrack.getMbidTrack())) {
-							insertStatement.setNull(20, Types.OTHER);
+							insertStatement.setNull(++databaseColumnIterator, Types.OTHER);
 						} else {
 							try {
 								UUID mbidTrack = UUID.fromString(trimToEmpty(audioTrack.getMbidTrack()));
-								insertStatement.setObject(20, mbidTrack);
+								insertStatement.setObject(++databaseColumnIterator, mbidTrack);
 							} catch (IllegalArgumentException e) {
 								LOGGER.trace("UUID not well formated, store null value");
-								insertStatement.setNull(20, Types.OTHER);
+								insertStatement.setNull(++databaseColumnIterator, Types.OTHER);
 							}
 						}
-						insertStatement.setInt(21, audioTrack.getDisc());
+						insertStatement.setInt(++databaseColumnIterator, audioTrack.getDisc());
 						if (audioTrack.getRating() == null) {
-							insertStatement.setNull(22, Types.INTEGER);
+							insertStatement.setNull(++databaseColumnIterator, Types.INTEGER);
 						} else {
-							insertStatement.setInt(22, audioTrack.getRating());
+							insertStatement.setInt(++databaseColumnIterator, audioTrack.getRating());
 						}
 						insertStatement.executeUpdate();
 					}
@@ -386,7 +393,6 @@ public class MediaTableAudiotracks extends MediaTable {
 			}
 		}
 	}
-
 
 	protected static List<DLNAMediaAudio> getAudioTracks(Connection connection, long fileId) {
 		List<DLNAMediaAudio> result = new ArrayList<>();
@@ -399,6 +405,7 @@ public class MediaTableAudiotracks extends MediaTable {
 				while (elements.next()) {
 					DLNAMediaAudio audio = new DLNAMediaAudio();
 					audio.setId(elements.getInt("ID"));
+					audio.setStreamId(elements.getInt("STREAM_ID"));
 					audio.setLang(elements.getString("LANG"));
 					audio.setAudioTrackTitleFromMetadata(elements.getString("TITLE"));
 					audio.getAudioProperties().setNumberOfChannels(elements.getInt("NRAUDIOCHANNELS"));
@@ -420,6 +427,7 @@ public class MediaTableAudiotracks extends MediaTable {
 					audio.setAudiotrackId(elements.getInt("AUDIOTRACK_ID"));
 					audio.setMbidRecord(elements.getString("MBID_RECORD"));
 					audio.setMbidTrack(elements.getString("MBID_TRACK"));
+					LOGGER.trace("Adding audio from the database: {}", audio.toString());
 					result.add(audio);
 				}
 			}

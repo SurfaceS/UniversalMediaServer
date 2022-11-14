@@ -275,11 +275,11 @@ public class TsMuxeRVideo extends Engine {
 
 			int numAudioTracks = 1;
 
-			if (media.getAudioTracks() != null && media.getAudioTracks().size() > 1 && configuration.isMuxAllAudioTracks()) {
-				numAudioTracks = media.getAudioTracks().size();
+			if (media.getAudioTrackCount() > 1 && configuration.isMuxAllAudioTracks()) {
+				numAudioTracks = media.getAudioTrackCount();
 			}
 
-			boolean singleMediaAudio = media.getAudioTracks().size() <= 1;
+			boolean singleMediaAudio = media.getAudioTrackCount() <= 1;
 
 			if (params.getMediaAudio() != null) {
 				boolean ac3Remux;
@@ -724,7 +724,7 @@ public class TsMuxeRVideo extends Engine {
 
 		try {
 			String audioTrackName = resource.getMediaAudio().toString();
-			String defaultAudioTrackName = resource.getMedia().getAudioTracks().get(0).toString();
+			String defaultAudioTrackName = resource.getMedia().getFirstAudioTrack().toString();
 
 			if (!audioTrackName.equals(defaultAudioTrackName)) {
 				// PMS only supports playback of the default audio track for tsMuxeR

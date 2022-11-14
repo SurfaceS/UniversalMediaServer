@@ -40,6 +40,7 @@ import net.pms.dlna.DLNAResource;
 import net.pms.formats.Format;
 import net.pms.image.ExifInfo;
 import net.pms.image.ExifOrientation;
+import net.pms.image.ImageFormat;
 import net.pms.image.ImageInfo;
 import net.pms.image.ImagesUtil;
 import net.pms.image.thumbnailator.ExifFilterUtils;
@@ -51,6 +52,7 @@ import net.pms.io.ProcessWrapperImpl;
 import net.pms.io.SimpleProcessWrapper;
 import net.pms.platform.windows.NTStatus;
 import net.pms.renderers.Renderer;
+import net.pms.util.ParseException;
 import net.pms.util.Version;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -353,9 +355,14 @@ public class DCRaw extends ImageEngine {
 		for (String s : list) {
 			matcher = pattern.matcher(s);
 			if (matcher.find()) {
-				//FIXME : set image
-				//media.setWidth(Integer.parseInt(matcher.group(1)));
-				//media.setHeight(Integer.parseInt(matcher.group(2)));
+				try {
+					int width = Integer.parseInt(matcher.group(1));
+					int height = Integer.parseInt(matcher.group(2));
+					ImageInfo currentImage = ImageInfo.create(width, height, ImageFormat.RAW, ImageInfo.SIZE_UNKNOWN, null, null, false, false);
+					media.setImageInfo(currentImage);
+				} catch (NumberFormatException | ParseException e) {
+					LOGGER.debug("Could not parse image");
+				}
 				if (LOGGER.isTraceEnabled()) {
 					LOGGER.trace(
 						"Parsed resolution {} x {} for image \"{}\" from DCRaw output",

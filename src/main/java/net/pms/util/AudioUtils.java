@@ -273,7 +273,7 @@ public final class AudioUtils {
 				return false;
 			}
 
-			media.getAudioTracks().add(audio);
+			media.addAudioTrack(audio);
 			long fileSize = 0;
 			if (channel instanceof FileChannel fileChannel) {
 				fileSize = fileChannel.size();

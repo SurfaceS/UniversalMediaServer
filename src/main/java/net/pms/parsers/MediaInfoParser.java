@@ -41,6 +41,7 @@ import net.pms.dlna.InputFile;
 import net.pms.formats.Format;
 import net.pms.formats.v2.SubtitleType;
 import net.pms.image.ImageFormat;
+import net.pms.image.ImageInfo;
 import net.pms.image.ImagesUtil;
 import net.pms.image.ImagesUtil.ScaleType;
 import net.pms.network.mediaserver.handlers.api.starrating.StarRating;
@@ -49,6 +50,7 @@ import net.pms.parsers.mediainfo.MediaInfo;
 import net.pms.parsers.mediainfo.StreamKind;
 import net.pms.util.FileUtil;
 import net.pms.util.Iso639;
+import net.pms.util.ParseException;
 import net.pms.util.StringUtil;
 import net.pms.util.UnknownFormatException;
 import net.pms.util.Version;
@@ -270,7 +272,11 @@ public class MediaInfoParser {
 						addSub(currentSubTrack, media);
 					} else {
 						currentVideoTrack = new DLNAMediaVideo();
-						currentVideoTrack.setVideoStreamIndex(i + 1);
+						currentVideoTrack.setId(i);
+						value = MI.get(video, i, "ID");
+						if (!value.isEmpty()) {
+							currentVideoTrack.setStreamId(getIntValue(value));
+						}
 						setVideoFormat(media, currentVideoTrack, MI.get(video, i, "Format"), file);
 						setVideoFormat(media, currentVideoTrack, MI.get(video, i, "Format_Version"), file);
 						setVideoFormat(media, currentVideoTrack, MI.get(video, i, "CodecID"), file);
@@ -350,6 +356,7 @@ public class MediaInfoParser {
 			if (audioTracks > 0) {
 				for (int i = 0; i < audioTracks; i++) {
 					currentAudioTrack = new DLNAMediaAudio();
+					currentAudioTrack.setId(i);
 					setAudioFormat(media, currentAudioTrack, MI.get(audio, i, "Format/String"), file);
 					setAudioFormat(media, currentAudioTrack, MI.get(audio, i, "Format_Version"), file);
 					setAudioFormat(media, currentAudioTrack, MI.get(audio, i, "Format_Profile"), file);
@@ -437,9 +444,9 @@ public class MediaInfoParser {
 					value = MI.get(audio, i, "ID/String");
 					if (!value.isEmpty()) {
 						if (value.contains("(0x") && !FormatConfiguration.OGG.equals(media.getContainer())) {
-							currentAudioTrack.setId(getSpecificID(value));
+							currentAudioTrack.setStreamId(getSpecificID(value));
 						} else {
-							currentAudioTrack.setId(media.getAudioTracks().size());
+							currentAudioTrack.setStreamId(getIntValue(value));
 						}
 					}
 
@@ -493,7 +500,22 @@ public class MediaInfoParser {
 					setImageFormat(media, MI.get(image, 0, "Format"), file);
 					int width = getPixelValue(MI.get(image, 0, "Width"));
 					int height = getPixelValue(MI.get(image, 0, "Height"));
-					//FIXME : set image
+					ImageFormat imageFormat = ImageFormat.toImageFormat(MI.get(image, 0, "Format"));
+					long size = ImageInfo.SIZE_UNKNOWN;
+					value = MI.get(image, 0, "StreamSize");
+					if (!value.isEmpty()) {
+						try {
+							size = Long.parseLong(value);
+						} catch (NumberFormatException nfe) {
+							LOGGER.debug("Could not parse size \"" + value + "\"");
+						}
+					}
+					try {
+						ImageInfo currentImage = ImageInfo.create(width, height, imageFormat, size, null, null, false, false);
+						media.setImageInfo(currentImage);
+					} catch (ParseException pe) {
+						LOGGER.debug("Could not parse image");
+					}
 				}
 
 				if (parseLogger != null) {
@@ -511,6 +533,7 @@ public class MediaInfoParser {
 			if (subTracks > 0) {
 				for (int i = 0; i < subTracks; i++) {
 					currentSubTrack = new DLNAMediaSubtitle();
+					currentSubTrack.setId(i);
 					currentSubTrack.setType(SubtitleType.valueOfMediaInfoValue(MI.get(text, i, "CodecID"),
 						SubtitleType.valueOfMediaInfoValue(MI.get(text, i, "Format"))
 					));
@@ -540,12 +563,11 @@ public class MediaInfoParser {
 					value = MI.get(text, i, "ID/String");
 					if (isNotBlank(value)) {
 						if (value.contains("(0x") && !FormatConfiguration.OGG.equals(media.getContainer())) {
-							currentSubTrack.setId(getSpecificID(value));
+							currentSubTrack.setStreamId(getSpecificID(value));
 						} else {
-							currentSubTrack.setId(media.getSubtitlesTracks().size());
+							currentSubTrack.setStreamId(getIntValue(value));
 						}
 					}
-
 					addSub(currentSubTrack, media);
 					if (parseLogger != null) {
 						parseLogger.logSubtitleTrackColumns(i, false);
@@ -693,7 +715,7 @@ public class MediaInfoParser {
 			currentVideoTrack.setCodec(DLNAMediaLang.UND);
 		}
 
-		media.getVideoTracks().add(currentVideoTrack);
+		media.addVideoTrack(currentVideoTrack);
 	}
 
 	private static void addAudio(DLNAMediaAudio currentAudioTrack, DLNAMediaInfo media) {
@@ -705,7 +727,7 @@ public class MediaInfoParser {
 			currentAudioTrack.setCodecA(DLNAMediaLang.UND);
 		}
 
-		media.getAudioTracks().add(currentAudioTrack);
+		media.addAudioTrack(currentAudioTrack);
 	}
 
 	private static void addSub(DLNAMediaSubtitle currentSubTrack, DLNAMediaInfo media) {
@@ -971,32 +993,19 @@ public class MediaInfoParser {
 		} else if (value.equals("ssr")) {
 			format = FormatConfiguration.AAC_SSR;
 		} else if (value.startsWith("a_aac")) {
-			if (value.equals("a_aac/mpeg2/main")) {
-				format = FormatConfiguration.AAC_MAIN;
-			} else if (
-				value.equals("a_aac/mpeg2/lc") ||
-				value.equals("a_aac-2")
-			) {
-				format = FormatConfiguration.AAC_LC;
-			} else if (value.equals("a_aac/mpeg2/lc/sbr")) {
-				format = FormatConfiguration.HE_AAC;
-			} else if (value.equals("a_aac/mpeg2/ssr")) {
-				format = FormatConfiguration.AAC_SSR;
-			} else if (value.equals("a_aac/mpeg4/main")) {
-				format = FormatConfiguration.AAC_MAIN;
-			} else if (value.equals("a_aac/mpeg4/lc")) {
-				format = FormatConfiguration.AAC_LC;
-			} else if (value.equals("a_aac/mpeg4/lc/sbr")) {
-				format = FormatConfiguration.HE_AAC;
-			} else if (value.equals("a_aac/mpeg4/lc/sbr/ps")) { // HE-AACv2
-				format = FormatConfiguration.HE_AAC;
-			} else if (value.equals("a_aac/mpeg4/ssr")) {
-				format = FormatConfiguration.AAC_SSR;
-			} else if (value.equals("a_aac/mpeg4/ltp")) {
-				format = FormatConfiguration.AAC_LTP;
-			} else {
-				format = FormatConfiguration.AAC_MAIN;
-			}
+			format = switch (value) {
+				case "a_aac/mpeg2/main" -> FormatConfiguration.AAC_MAIN;
+				case "a_aac/mpeg2/lc", "a_aac-2" -> FormatConfiguration.AAC_LC;
+				case "a_aac/mpeg2/lc/sbr" -> FormatConfiguration.HE_AAC;
+				case "a_aac/mpeg2/ssr" -> FormatConfiguration.AAC_SSR;
+				case "a_aac/mpeg4/main" -> FormatConfiguration.AAC_MAIN;
+				case "a_aac/mpeg4/lc" -> FormatConfiguration.AAC_LC;
+				case "a_aac/mpeg4/lc/sbr" -> FormatConfiguration.HE_AAC;
+				case "a_aac/mpeg4/lc/sbr/ps" -> FormatConfiguration.HE_AAC;
+				case "a_aac/mpeg4/ssr" -> FormatConfiguration.AAC_SSR;
+				case "a_aac/mpeg4/ltp" -> FormatConfiguration.AAC_LTP;
+				default -> FormatConfiguration.AAC_MAIN;
+			};
 		} else if (
 			value.equals("er bsac") ||
 			value.equals("mp4a-40-22")
@@ -1109,6 +1118,15 @@ public class MediaInfoParser {
 		// format not found so set container type based on the file extension. It will be overwritten when the correct type will be found
 		} else if (streamType == StreamKind.GENERAL && media.getContainer() == null) {
 			media.setContainer(FileUtil.getExtension(file.getAbsolutePath()).toLowerCase(Locale.ROOT));
+		}
+	}
+
+	private static int getIntValue(String value) {
+		try {
+			return Integer.parseInt(value);
+		} catch (NumberFormatException e) {
+			LOGGER.trace("Could not parse value \"{}\": ", value, e.getMessage());
+			return 0;
 		}
 	}
 

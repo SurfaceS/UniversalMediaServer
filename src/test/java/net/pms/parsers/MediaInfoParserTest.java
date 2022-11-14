@@ -124,7 +124,7 @@ public class MediaInfoParserTest {
 		assertEquals(FormatConfiguration.DIVX, video.getCodec());
 		media.setContainer("");
 		MediaInfoParser.setAudioFormat(media, audio, "mp42 (mp42/isom)", null);
-		assertEquals(FormatConfiguration.MP4, media.getContainer());
+		assertEquals(FormatConfiguration.MP4, audio.getCodecA());
 		video.setCodec("");
 		MediaInfoParser.setVideoFormat(media, video, "DIVX", null);
 		assertEquals(FormatConfiguration.DIVX, video.getCodec());

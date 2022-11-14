@@ -480,7 +480,7 @@ public class RequestHandler implements HttpHandler {
 					}
 					inputStream = DLNAResource.wrap(inputStream, range.getEnd(), range.getStart());
 				}
-			} else if (dlna.getMedia() != null && dlna.getMedia().getMediaType() == MediaType.IMAGE && dlna.isCodeValid(dlna)) {
+			} else if (dlna.getMedia() != null && dlna.getMedia().isImage() && dlna.isCodeValid(dlna)) {
 				// This is a request for an image
 				SleepManager sleepManager = Services.sleepManager();
 				if (sleepManager != null) {

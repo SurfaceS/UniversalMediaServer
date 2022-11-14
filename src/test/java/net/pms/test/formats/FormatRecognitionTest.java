@@ -351,7 +351,7 @@ public class FormatRecognitionTest {
 		List<DLNAMediaVideo> videoTracks = new ArrayList<>();
 		videoTracks.add(video);
 		info.setVideoTracks(videoTracks);
-		info.getAudioTracks().add(audio);
+		info.addAudioTrack(audio);
 		dlna.setMedia(info);
 
 		// SUBRIP external: true
