@@ -22,13 +22,13 @@ import java.util.ListIterator;
 import java.util.Locale;
 import java.util.StringTokenizer;
 import net.pms.configuration.FormatConfiguration;
-import net.pms.dlna.DLNAMediaAudio;
-import net.pms.dlna.DLNAMediaChapter;
-import net.pms.dlna.DLNAMediaInfo;
-import net.pms.dlna.DLNAMediaLang;
-import net.pms.dlna.DLNAMediaSubtitle;
-import net.pms.dlna.DLNAMediaVideo;
 import net.pms.formats.v2.SubtitleType;
+import net.pms.media.Media;
+import net.pms.media.MediaAudio;
+import net.pms.media.MediaChapter;
+import net.pms.media.MediaLang;
+import net.pms.media.MediaSubtitle;
+import net.pms.media.MediaVideo;
 import net.pms.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +48,7 @@ public class FFmpegParser {
 	 * @param lines The stderr output
 	 * @param input The FFmpeg input (-i) argument used
 	 */
-	public static void parse(DLNAMediaInfo media, List<String> lines, String input) {
+	public static void parse(Media media, List<String> lines, String input) {
 		if (lines != null) {
 			if ("-".equals(input)) {
 				input = "pipe:";
@@ -123,12 +123,12 @@ public class FFmpegParser {
 						StringTokenizer st = new StringTokenizer(line, ",");
 						int a = line.indexOf('(');
 						int b = line.indexOf("):", a);
-						DLNAMediaAudio audio = new DLNAMediaAudio();
+						MediaAudio audio = new MediaAudio();
 						audio.setId(audioId++);
 						if (a > -1 && b > a) {
 							audio.setLang(line.substring(a + 1, b));
 						} else {
-							audio.setLang(DLNAMediaLang.UND);
+							audio.setLang(MediaLang.UND);
 						}
 
 						// Get TS IDs
@@ -224,7 +224,7 @@ public class FFmpegParser {
 						media.addAudioTrack(audio);
 					} else if (line.contains("Video:")) {
 						StringTokenizer st = new StringTokenizer(line, ",");
-						DLNAMediaVideo video = new DLNAMediaVideo();
+						MediaVideo video = new MediaVideo();
 						video.setId(videoId++);
 						while (st.hasMoreTokens()) {
 							String token = st.nextToken().trim();
@@ -279,7 +279,7 @@ public class FFmpegParser {
 						}
 						media.addVideoTrack(video);
 					} else if (line.contains("Subtitle:")) {
-						DLNAMediaSubtitle subtitle = new DLNAMediaSubtitle();
+						MediaSubtitle subtitle = new MediaSubtitle();
 						subtitle.setId(subId++);
 						// $ ffmpeg -codecs | grep "^...S"
 						// ..S... = Subtitle codec
@@ -336,7 +336,7 @@ public class FFmpegParser {
 						if (a > -1 && b > a) {
 							subtitle.setLang(line.substring(a + 1, b));
 						} else {
-							subtitle.setLang(DLNAMediaLang.UND);
+							subtitle.setLang(MediaLang.UND);
 						}
 						int fFmpegMetaDataNr = fFmpegMetaData.nextIndex();
 						if (fFmpegMetaDataNr > -1) {
@@ -365,9 +365,9 @@ public class FFmpegParser {
 						if (fFmpegMetaDataNr > -1) {
 							line = lines.get(fFmpegMetaDataNr);
 						}
-						List<DLNAMediaChapter> ffmpegChapters = new ArrayList<>();
+						List<MediaChapter> ffmpegChapters = new ArrayList<>();
 						while (line.contains("Chapter #")) {
-							DLNAMediaChapter chapter = new DLNAMediaChapter();
+							MediaChapter chapter = new MediaChapter();
 							//set chapter id
 							String idStr = line.substring(line.indexOf("Chapter #") + 9);
 							if (idStr.contains(" ")) {
@@ -398,7 +398,7 @@ public class FFmpegParser {
 								}
 								chapter.setEnd(Double.parseDouble(endStr));
 							}
-							chapter.setLang(DLNAMediaLang.UND);
+							chapter.setLang(MediaLang.UND);
 							fFmpegMetaDataNr += 1;
 							line = lines.get(fFmpegMetaDataNr);
 							if (line.contains("Metadata:")) {
@@ -411,7 +411,7 @@ public class FFmpegParser {
 										String value = line.substring(aa + 2);
 										if ("title".equals(key)) {
 											//do not set title if it is default, it will be filled automatically later
-											if (!DLNAMediaChapter.isTitleDefault(value)) {
+											if (!MediaChapter.isTitleDefault(value)) {
 												chapter.setTitle(value);
 											}
 										} else {

@@ -16,11 +16,9 @@
  */
 package net.pms.dlna;
 
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.text.WordUtils;
 import net.pms.PMS;
 import net.pms.dlna.virtual.VirtualFolder;
 import net.pms.formats.Format;
@@ -28,6 +26,8 @@ import net.pms.io.OutputParams;
 import net.pms.io.ProcessWrapperImpl;
 import net.pms.util.ProcessUtil;
 import net.pms.util.UMSUtils;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import org.apache.commons.text.WordUtils;
 
 public class DVDISOFile extends VirtualFolder {
 	private static final String NAME = "[DVD ISO] %s";

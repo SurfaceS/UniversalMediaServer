@@ -32,9 +32,9 @@ import net.pms.Messages;
 import net.pms.PMS;
 import net.pms.configuration.ConfigurableProgramPaths;
 import net.pms.configuration.UmsConfiguration;
-import net.pms.dlna.DLNAMediaInfo;
-import net.pms.dlna.DLNAMediaLang;
-import net.pms.dlna.DLNAMediaOnDemandSubtitle;
+import net.pms.media.Media;
+import net.pms.media.MediaLang;
+import net.pms.media.DLNAMediaOnDemandSubtitle;
 import net.pms.dlna.DLNAResource;
 import net.pms.formats.Format;
 import net.pms.io.OutputParams;
@@ -744,7 +744,7 @@ public abstract class Engine {
 
 	public abstract ProcessWrapper launchTranscode(
 		DLNAResource dlna,
-		DLNAMediaInfo media,
+		Media media,
 		OutputParams params
 	) throws IOException;
 
@@ -772,7 +772,7 @@ public abstract class Engine {
 			params.setMediaAudio(resource.resolveAudioStream(params.getMediaRenderer()));
 		}
 
-		if (params.getMediaSubtitle() != null && params.getMediaSubtitle().getId() == DLNAMediaLang.DUMMY_ID) {
+		if (params.getMediaSubtitle() != null && params.getMediaSubtitle().getId() == MediaLang.DUMMY_ID) {
 			LOGGER.trace("Don't want subtitles!");
 			params.setMediaSubtitle(null);
 		} else if (params.getMediaSubtitle() instanceof DLNAMediaOnDemandSubtitle dLNAMediaOnDemandSubtitle) {

@@ -17,7 +17,7 @@
 package net.pms.formats;
 
 import java.util.List;
-import net.pms.dlna.DLNAMediaInfo;
+import net.pms.media.Media;
 import net.pms.dlna.InputFile;
 import net.pms.formats.audio.*;
 import net.pms.formats.image.*;
@@ -86,12 +86,12 @@ public class FormatsRegressionTest {
 	@Test
 	public void test10() throws Throwable {
 		MPG mPG0 = new MPG();
-		DLNAMediaInfo dLNAMediaInfo1 = null;
+		Media media1 = null;
 		InputFile inputFile2 = null;
 		// The following exception was thrown during execution in test
 		// generation
 		try {
-			MediaParser.parse(dLNAMediaInfo1, inputFile2, mPG0, 0, null);
+			MediaParser.parse(media1, inputFile2, mPG0, 0, null);
 			fail("Expected exception of type NullPointerException");
 		} catch (NullPointerException e) {
 			// Expected exception.

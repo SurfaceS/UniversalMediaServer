@@ -16,6 +16,9 @@
  */
 package net.pms.configuration;
 
+import net.pms.media.Media;
+import net.pms.media.MediaAudio;
+import net.pms.media.MediaSubtitle;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -26,7 +29,7 @@ import java.util.regex.Pattern;
 import net.pms.Messages;
 import net.pms.PMS;
 import net.pms.dlna.*;
-import net.pms.dlna.DLNAMediaInfo.Mode3D;
+import net.pms.media.Media.Mode3D;
 import net.pms.formats.Format;
 import net.pms.formats.Format.Identifier;
 import net.pms.formats.v2.AudioProperties;
@@ -582,7 +585,7 @@ public class RendererConfiguration extends BaseConfiguration {
 	 * @return whether this renderer supports the video stream type of this
 	 *         resource inside the container it wants for transcoding.
 	 */
-	public boolean isVideoStreamTypeSupportedInTranscodingContainer(DLNAMediaInfo media) {
+	public boolean isVideoStreamTypeSupportedInTranscodingContainer(Media media) {
 		return (
 			(isTranscodeToH264() && media.isH264()) ||
 			(isTranscodeToH265() && media.isH265())
@@ -600,7 +603,7 @@ public class RendererConfiguration extends BaseConfiguration {
 	 * @return whether this renderer supports the audio stream type of this
 	 *         resource inside the container it wants for transcoding.
 	 */
-	public boolean isAudioStreamTypeSupportedInTranscodingContainer(DLNAMediaAudio audio) {
+	public boolean isAudioStreamTypeSupportedInTranscodingContainer(MediaAudio audio) {
 		return (
 			(isTranscodeToAAC() && audio.isAACLC()) ||
 			(isTranscodeToAC3() && audio.isAC3())
@@ -623,7 +626,7 @@ public class RendererConfiguration extends BaseConfiguration {
 		}
 
 		String matchedMimeType = null;
-		DLNAMediaInfo media = resource.getMedia();
+		Media media = resource.getMedia();
 
 		if (isUseMediaInfo()) {
 			// Use the supported information in the configuration to determine the transcoding mime type.
@@ -1243,7 +1246,7 @@ public class RendererConfiguration extends BaseConfiguration {
 	 * 				otherwise.
 	 */
 	public boolean isCompatible(DLNAResource dlna, Format format, UmsConfiguration configuration) {
-		DLNAMediaInfo mediaInfo;
+		Media mediaInfo;
 		if (dlna != null) {
 			mediaInfo = dlna.getMedia();
 		} else {
@@ -1528,7 +1531,7 @@ public class RendererConfiguration extends BaseConfiguration {
 	 * @return whether the renderer specifies support for the subtitles and
 	 * renderer supports subs streaming for the given media video.
 	 */
-	public boolean isExternalSubtitlesFormatSupported(DLNAMediaSubtitle subtitle, DLNAResource dlna) {
+	public boolean isExternalSubtitlesFormatSupported(MediaSubtitle subtitle, DLNAResource dlna) {
 		if (subtitle == null || dlna == null) {
 			return false;
 		}
@@ -1565,7 +1568,7 @@ public class RendererConfiguration extends BaseConfiguration {
 	 * @param dlna The dlna resource
 	 * @return whether the renderer specifies support for the subtitles
 	 */
-	public boolean isEmbeddedSubtitlesFormatSupported(DLNAMediaSubtitle subtitle, DLNAResource dlna) {
+	public boolean isEmbeddedSubtitlesFormatSupported(MediaSubtitle subtitle, DLNAResource dlna) {
 		if (subtitle == null) {
 			return false;
 		}
@@ -1588,7 +1591,7 @@ public class RendererConfiguration extends BaseConfiguration {
 		String value = getString(KEY_OUTPUT_3D_FORMAT, "").toLowerCase(Locale.ROOT);
 		// check if the parameter is specified correctly
 		if (StringUtils.isNotBlank(value)) {
-			for (Mode3D format : DLNAMediaInfo.Mode3D.values()) {
+			for (Mode3D format : Media.Mode3D.values()) {
 				if (value.equals(format.toString().toLowerCase(Locale.ROOT))) {
 					return value;
 				}

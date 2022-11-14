@@ -16,8 +16,10 @@
  */
 package net.pms.dlna;
 
+import net.pms.dlna.protocolinfo.DLNAImageProfile;
 import java.io.IOException;
 import java.io.InputStream;
+import net.pms.media.Media;
 
 public class FeedItem extends DLNAResource {
 	private final String title;
@@ -26,7 +28,7 @@ public class FeedItem extends DLNAResource {
 
 	private long length;
 
-	public FeedItem(String title, String itemURL, String thumbURL, DLNAMediaInfo media, int type) {
+	public FeedItem(String title, String itemURL, String thumbURL, Media media, int type) {
 		super(type);
 		this.title = title;
 		this.itemURL = itemURL;
@@ -35,7 +37,7 @@ public class FeedItem extends DLNAResource {
 	}
 
 	@Override
-	protected String getThumbnailURL(DLNAImageProfile profile) {
+	public String getThumbnailURL(DLNAImageProfile profile) {
 		if (thumbURL == null) {
 			return null;
 		}

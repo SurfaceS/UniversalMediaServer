@@ -23,8 +23,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import net.pms.dlna.DLNAMediaInfo;
-import net.pms.dlna.DLNAMediaSubtitle;
+import net.pms.media.Media;
+import net.pms.media.MediaSubtitle;
 import net.pms.formats.v2.SubtitleType;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -125,7 +125,7 @@ public class MediaTableSubtracks extends MediaTable {
 		);
 	}
 
-	protected static void insertOrUpdateSubtitleTracks(Connection connection, long fileId, DLNAMediaInfo media) throws SQLException {
+	protected static void insertOrUpdateSubtitleTracks(Connection connection, long fileId, Media media) throws SQLException {
 		if (connection == null || fileId < 0 || media == null || !media.hasSubtitle()) {
 			return;
 		}
@@ -147,7 +147,7 @@ public class MediaTableSubtracks extends MediaTable {
 				createDefaultValueForInsertStatement(columns)
 			);
 		) {
-			for (DLNAMediaSubtitle subtitleTrack : media.getSubtitlesTracks()) {
+			for (MediaSubtitle subtitleTrack : media.getSubtitlesTracks()) {
 				updateStatement.setLong(1, fileId);
 				updateStatement.setInt(2, subtitleTrack.getId());
 				if (subtitleTrack.getExternalFile() != null) {
@@ -190,8 +190,8 @@ public class MediaTableSubtracks extends MediaTable {
 		}
 	}
 
-	protected static List<DLNAMediaSubtitle> getSubtitleTracks(Connection connection, long fileId) {
-		List<DLNAMediaSubtitle> result = new ArrayList<>();
+	protected static List<MediaSubtitle> getSubtitleTracks(Connection connection, long fileId) {
+		List<MediaSubtitle> result = new ArrayList<>();
 		List<String> externalFileReferencesToRemove = new ArrayList<>();
 		if (connection == null || fileId < 0) {
 			return result;
@@ -206,7 +206,7 @@ public class MediaTableSubtracks extends MediaTable {
 						externalFileReferencesToRemove.add(externalFile.getPath());
 						continue;
 					}
-					DLNAMediaSubtitle sub = new DLNAMediaSubtitle();
+					MediaSubtitle sub = new MediaSubtitle();
 					sub.setId(elements.getInt("ID"));
 					sub.setStreamId(elements.getInt("STREAM_ID"));
 					sub.setLang(elements.getString("LANG"));

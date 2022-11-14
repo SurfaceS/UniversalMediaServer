@@ -30,8 +30,14 @@ import java.util.Set;
 import net.pms.database.MediaDatabase;
 import net.pms.database.MediaTableCoverArtArchive;
 import net.pms.database.MediaTableFiles;
+import net.pms.dlna.protocolinfo.DLNAImageProfile;
+import net.pms.dlna.virtual.SubSelFile;
 import net.pms.formats.Format;
 import net.pms.formats.FormatFactory;
+import net.pms.media.DLNAMediaOnDemandSubtitle;
+import net.pms.media.Media;
+import net.pms.media.MediaLang;
+import net.pms.media.MediaType;
 import net.pms.parsers.MediaParser;
 import net.pms.platform.PlatformUtils;
 import net.pms.util.FileUtil;
@@ -105,7 +111,7 @@ public class RealFile extends VirtualFile {
 			// Given that here getFormat() has already matched some (possibly plugin-defined) format:
 			//    Format.UNKNOWN + bad parse = inconclusive
 			//    known types    + bad parse = bad/encrypted file
-			if (this.getType() != Format.UNKNOWN && getMedia() != null && (getMedia().isEncrypted() || getMedia().getContainer() == null || getMedia().getContainer().equals(DLNAMediaLang.UND))) {
+			if (this.getType() != Format.UNKNOWN && getMedia() != null && (getMedia().isEncrypted() || getMedia().getContainer() == null || getMedia().getContainer().equals(MediaLang.UND))) {
 				if (getMedia().isEncrypted()) {
 					valid = false;
 					LOGGER.info("The file {} is encrypted. It will be hidden", file.getAbsolutePath());
@@ -154,7 +160,7 @@ public class RealFile extends VirtualFile {
 	@Override
 	public long length() {
 		if (getEngine() != null && getEngine().type() != Format.IMAGE) {
-			return DLNAMediaInfo.TRANS_SIZE;
+			return Media.TRANS_SIZE;
 		} else if (getMedia() != null && getMedia().isMediaparsed()) {
 			return getMedia().getSize();
 		}
@@ -231,7 +237,7 @@ public class RealFile extends VirtualFile {
 					connection = MediaDatabase.getConnectionIfAvailable();
 					if (connection != null) {
 						connection.setAutoCommit(false);
-						DLNAMediaInfo media;
+						Media media;
 						try {
 							media = MediaTableFiles.getData(connection, fileName, file.lastModified());
 
@@ -256,7 +262,7 @@ public class RealFile extends VirtualFile {
 
 				if (!found) {
 					if (getMedia() == null) {
-						setMedia(new DLNAMediaInfo());
+						setMedia(new Media());
 					}
 
 					if (getFormat() != null) {
@@ -378,7 +384,7 @@ public class RealFile extends VirtualFile {
 	}
 
 	@Override
-	protected String getThumbnailURL(DLNAImageProfile profile) {
+	public String getThumbnailURL(DLNAImageProfile profile) {
 		if (getType() == Format.IMAGE && !configuration.getImageThumbnailsEnabled()) {
 			return null;
 		}
@@ -400,7 +406,7 @@ public class RealFile extends VirtualFile {
 	private final Object displayNameBaseLock = new Object();
 
 	@Override
-	protected String getDisplayNameBase() {
+	public String getDisplayNameBase() {
 		if (getParent() instanceof SubSelFile && getMediaSubtitle() instanceof DLNAMediaOnDemandSubtitle) {
 			return ((DLNAMediaOnDemandSubtitle) getMediaSubtitle()).getName();
 		}

@@ -25,13 +25,13 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import static net.pms.database.DatabaseHelper.SIZE_MAX;
-import net.pms.dlna.DLNAMediaInfo;
-import net.pms.dlna.DLNAMediaVideo;
+import net.pms.media.Media;
+import net.pms.media.MediaVideo;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import net.pms.dlna.DLNAMediaVideo.ScanOrder;
-import net.pms.dlna.DLNAMediaVideo.ScanType;
+import net.pms.media.MediaVideo.ScanOrder;
+import net.pms.media.MediaVideo.ScanType;
 
 /**
  * This class is responsible for managing the Videotracks releases table. It
@@ -144,7 +144,7 @@ public class MediaTableVideotracks extends MediaTable {
 		}
 	}
 
-	protected static void insertOrUpdateVideoTracks(Connection connection, long fileId, DLNAMediaInfo media) throws SQLException {
+	protected static void insertOrUpdateVideoTracks(Connection connection, long fileId, Media media) throws SQLException {
 		if (connection == null || fileId < 0 || media == null || media.getVideoTrackCount() < 1) {
 			return;
 		}
@@ -165,7 +165,7 @@ public class MediaTableVideotracks extends MediaTable {
 				createDefaultValueForInsertStatement(columns)
 			);
 		) {
-			for (DLNAMediaVideo videoTrack : media.getVideoTracks()) {
+			for (MediaVideo videoTrack : media.getVideoTracks()) {
 				updateStatment.setLong(1, fileId);
 				updateStatment.setInt(2, videoTrack.getId());
 				try (ResultSet rs = updateStatment.executeQuery()) {
@@ -257,8 +257,8 @@ public class MediaTableVideotracks extends MediaTable {
 		}
 	}
 
-	protected static List<DLNAMediaVideo> getVideoTracks(Connection connection, long fileId) {
-		List<DLNAMediaVideo> result = new ArrayList<>();
+	protected static List<MediaVideo> getVideoTracks(Connection connection, long fileId) {
+		List<MediaVideo> result = new ArrayList<>();
 		if (connection == null || fileId < 0) {
 			return result;
 		}
@@ -266,7 +266,7 @@ public class MediaTableVideotracks extends MediaTable {
 			stmt.setLong(1, fileId);
 			try (ResultSet rs = stmt.executeQuery()) {
 				while (rs.next()) {
-					DLNAMediaVideo video = new DLNAMediaVideo();
+					MediaVideo video = new MediaVideo();
 					video.setId(rs.getInt("ID"));
 					video.setStreamId(rs.getInt("STREAM_ID"));
 					video.setLang(rs.getString("LANG"));

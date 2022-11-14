@@ -16,6 +16,7 @@
  */
 package net.pms.dlna;
 
+import net.pms.network.TimeRange;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -27,9 +28,11 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import net.pms.PMS;
 import net.pms.configuration.UmsConfiguration;
+import net.pms.media.Media;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+//TODO : check if dlna related
 public class ResumeObj {
 	private static final UmsConfiguration CONFIGURATION = PMS.getConfiguration();
 	private static final Logger LOGGER = LoggerFactory.getLogger(ResumeObj.class);
@@ -86,7 +89,7 @@ public class ResumeObj {
 
 		if (originalResource.getMedia() != null) {
 			double dur = originalResource.getMedia().getDurationInSeconds();
-			if (dur == 0.0 || dur == DLNAMediaInfo.TRANS_SIZE) {
+			if (dur == 0.0 || dur == Media.TRANS_SIZE) {
 				originalResource.getMedia().setDuration(res.resDuration / 1000.0);
 			}
 		}

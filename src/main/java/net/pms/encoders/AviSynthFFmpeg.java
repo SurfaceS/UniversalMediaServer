@@ -24,10 +24,10 @@ import java.util.ArrayList;
 import java.util.StringTokenizer;
 import net.pms.PMS;
 import net.pms.configuration.UmsConfiguration;
-import net.pms.dlna.DLNAMediaSubtitle;
 import net.pms.dlna.DLNAResource;
 import net.pms.formats.Format;
 import net.pms.formats.v2.SubtitleType;
+import net.pms.media.MediaSubtitle;
 import net.pms.util.PlayerUtil;
 import net.pms.util.ProcessUtil;
 import org.slf4j.Logger;
@@ -74,14 +74,14 @@ public class AviSynthFFmpeg extends FFMpegVideo {
 		return true;
 	}
 
-	public static File getAVSScript(String filename, DLNAMediaSubtitle subTrack) throws IOException {
+	public static File getAVSScript(String filename, MediaSubtitle subTrack) throws IOException {
 		return getAVSScript(filename, subTrack, -1, -1, null, null, CONFIGURATION);
 	}
 
 	/*
 	 * Generate the AviSynth script based on the user's settings
 	 */
-	public static File getAVSScript(String filename, DLNAMediaSubtitle subTrack, int fromFrame, int toFrame, String frameRateRatio, String frameRateNumber, UmsConfiguration configuration) throws IOException {
+	public static File getAVSScript(String filename, MediaSubtitle subTrack, int fromFrame, int toFrame, String frameRateRatio, String frameRateNumber, UmsConfiguration configuration) throws IOException {
 		String onlyFileName = filename.substring(1 + filename.lastIndexOf('\\'));
 		File file = new File(configuration.getTempFolder(), "pms-avs-" + onlyFileName + ".avs");
 		try (PrintWriter pw = new PrintWriter(new FileOutputStream(file))) {
@@ -227,10 +227,10 @@ public class AviSynthFFmpeg extends FFMpegVideo {
 			return false;
 		}
 
-		DLNAMediaSubtitle subtitle = resource.getMediaSubtitle();
+		MediaSubtitle subtitle = resource.getMediaSubtitle();
 
 		// Check whether the subtitle actually has a language defined,
-		// uninitialized DLNAMediaSubtitle objects have a null language.
+		// uninitialized MediaSubtitle objects have a null language.
 		if (subtitle != null && subtitle.getLang() != null) {
 			// The resource needs a subtitle, but this engine implementation does not support subtitles yet
 			return false;

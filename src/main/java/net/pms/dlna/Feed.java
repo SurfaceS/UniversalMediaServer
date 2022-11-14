@@ -37,7 +37,7 @@ import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Feed extends DLNAResource {
+public abstract class Feed extends DLNAResource {
 	private static final Logger LOGGER = LoggerFactory.getLogger(Feed.class);
 	private static final int REFRESH_INTERVAL = 60 * 60 * 1000; // 1 hour
 	private static final Map<String, String> FEED_TITLES_CACHE = Collections.synchronizedMap(new HashMap<>());
@@ -59,7 +59,7 @@ public class Feed extends DLNAResource {
 		}
 	}
 
-	public Feed(String name, String url, int type) {
+	protected Feed(String name, String url, int type) {
 		super(type);
 		this.url = url;
 		this.name = name;

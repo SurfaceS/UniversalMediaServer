@@ -16,6 +16,7 @@
  */
 package net.pms.dlna;
 
+import net.pms.dlna.protocolinfo.DLNAImageProfile;
 import java.io.*;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
@@ -53,7 +54,7 @@ public class ZippedFile extends DLNAResource {
 	}
 
 	@Override
-	protected String getThumbnailURL(DLNAImageProfile profile) {
+	public String getThumbnailURL(DLNAImageProfile profile) {
 		if (getType() == Format.IMAGE) {
 			// no thumbnail support for now for zip files
 			return null;

@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import net.pms.configuration.UmsConfiguration;
-import net.pms.dlna.DLNAMediaInfo;
+import net.pms.media.Media;
 import net.pms.dlna.DLNAResource;
 import net.pms.io.IPipeProcess;
 import net.pms.io.OutputParams;
@@ -66,7 +66,7 @@ public class YoutubeDl extends FFMpegVideo {
 	@Override
 	public synchronized ProcessWrapper launchTranscode(
 		DLNAResource dlna,
-		DLNAMediaInfo media,
+		Media media,
 		OutputParams params
 	) throws IOException {
 		params.setMinBufferSize(params.getMinFileSize());

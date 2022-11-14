@@ -20,11 +20,13 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import net.pms.dlna.DLNAImageProfile.HypotheticalResult;
+import net.pms.dlna.protocolinfo.DLNAImageProfile;
+import net.pms.dlna.protocolinfo.DLNAImageProfile.HypotheticalResult;
 import net.pms.image.ImageFormat;
 import net.pms.image.ImageInfo;
 import net.pms.renderers.Renderer;
 
+//FIXME : refactor as it is not dlna related
 /**
  * This class is used to represent a {@code <res>} element representing an image
  * (including thumbnail) in a {@code DIDL-Lite} document.

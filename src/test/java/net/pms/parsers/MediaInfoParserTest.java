@@ -18,9 +18,9 @@ package net.pms.parsers;
 
 import net.pms.PMS;
 import net.pms.configuration.FormatConfiguration;
-import net.pms.dlna.DLNAMediaAudio;
-import net.pms.dlna.DLNAMediaInfo;
-import net.pms.dlna.DLNAMediaVideo;
+import net.pms.media.MediaAudio;
+import net.pms.media.Media;
+import net.pms.media.MediaVideo;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -115,9 +115,9 @@ public class MediaInfoParserTest {
 
 	@Test
 	public void testSetFormat() throws Exception {
-		DLNAMediaInfo media = new DLNAMediaInfo();
-		DLNAMediaAudio audio = new DLNAMediaAudio();
-		DLNAMediaVideo video = new DLNAMediaVideo();
+		Media media = new Media();
+		MediaAudio audio = new MediaAudio();
+		MediaVideo video = new MediaVideo();
 		MediaInfoParser.setGeneralFormat(media, "XVID", null);
 		assertEquals(FormatConfiguration.DIVX, media.getContainer());
 		MediaInfoParser.setVideoFormat(media, video, "XVID", null);

@@ -17,7 +17,7 @@
 package net.pms.encoders;
 
 import java.io.IOException;
-import net.pms.dlna.DLNAMediaInfo;
+import net.pms.media.Media;
 import net.pms.dlna.DLNAResource;
 import net.pms.formats.Format;
 import net.pms.io.OutputParams;
@@ -54,7 +54,7 @@ public class TsMuxeRAudio extends TsMuxeRVideo {
 	@Override
 	public ProcessWrapper launchTranscode(
 		DLNAResource dlna,
-		DLNAMediaInfo media,
+		Media media,
 		OutputParams params
 	) throws IOException {
 		params.setTimeEnd(media.getDurationInSeconds());

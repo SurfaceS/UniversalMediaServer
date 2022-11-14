@@ -24,6 +24,8 @@ import java.util.List;
 import net.pms.encoders.Engine;
 import net.pms.encoders.EngineFactory;
 import net.pms.formats.Format;
+import net.pms.media.Media;
+import net.pms.network.TimeRange;
 import org.apache.commons.lang3.StringUtils;
 import org.digitalmediaserver.cuelib.CueParser;
 import org.digitalmediaserver.cuelib.CueSheet;
@@ -96,7 +98,7 @@ public class CueFolder extends DLNAResource {
 					FileData f = files.get(0);
 					List<TrackData> tracks = f.getTrackData();
 					Engine defaultPlayer = null;
-					DLNAMediaInfo originalMedia = null;
+					Media originalMedia = null;
 					ArrayList<DLNAResource> addedResources = new ArrayList<>();
 					for (int i = 0; i < tracks.size(); i++) {
 						TrackData track = tracks.get(i);
@@ -122,7 +124,7 @@ public class CueFolder extends DLNAResource {
 						addedResources.add(realFile);
 
 						if (i > 0 && realFile.getMedia() == null) {
-							realFile.setMedia(new DLNAMediaInfo());
+							realFile.setMedia(new Media());
 							realFile.getMedia().setMediaparsed(true);
 						}
 						realFile.syncResolve();
@@ -178,7 +180,7 @@ public class CueFolder extends DLNAResource {
 					if (!tracks.isEmpty() && !addedResources.isEmpty()) {
 						DLNAResource lastTrack = addedResources.get(addedResources.size() - 1);
 						TimeRange lastTrackSplitRange = lastTrack.getSplitRange();
-						DLNAMediaInfo lastTrackMedia = lastTrack.getMedia();
+						Media lastTrackMedia = lastTrack.getMedia();
 
 						if (lastTrackSplitRange != null && lastTrackMedia != null) {
 							lastTrackSplitRange.setEnd(lastTrackMedia.getDurationInSeconds());

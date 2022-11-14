@@ -30,8 +30,8 @@ import java.util.UUID;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import net.pms.dlna.DLNAMediaAudio;
-import net.pms.dlna.DLNAMediaInfo;
+import net.pms.media.MediaAudio;
+import net.pms.media.Media;
 
 /**
  * This class is responsible for managing the Audiotracks releases table. It
@@ -245,7 +245,7 @@ public class MediaTableAudiotracks extends MediaTable {
 		}
 	}
 
-	protected static void insertOrUpdateAudioTracks(Connection connection, long fileId, DLNAMediaInfo media) throws SQLException {
+	protected static void insertOrUpdateAudioTracks(Connection connection, long fileId, Media media) throws SQLException {
 		if (connection == null || fileId < 0 || media == null || !media.hasAudio()) {
 			return;
 		}
@@ -269,7 +269,7 @@ public class MediaTableAudiotracks extends MediaTable {
 				createDefaultValueForInsertStatement(columns)
 			);
 		) {
-			for (DLNAMediaAudio audioTrack : media.getAudioTracks()) {
+			for (MediaAudio audioTrack : media.getAudioTracks()) {
 				updateStatment.setLong(1, fileId);
 				updateStatment.setInt(2, audioTrack.getId());
 				try (ResultSet rs = updateStatment.executeQuery()) {
@@ -394,8 +394,8 @@ public class MediaTableAudiotracks extends MediaTable {
 		}
 	}
 
-	protected static List<DLNAMediaAudio> getAudioTracks(Connection connection, long fileId) {
-		List<DLNAMediaAudio> result = new ArrayList<>();
+	protected static List<MediaAudio> getAudioTracks(Connection connection, long fileId) {
+		List<MediaAudio> result = new ArrayList<>();
 		if (connection == null || fileId < 0) {
 			return result;
 		}
@@ -403,7 +403,7 @@ public class MediaTableAudiotracks extends MediaTable {
 			stmt.setLong(1, fileId);
 			try (ResultSet elements = stmt.executeQuery()) {
 				while (elements.next()) {
-					DLNAMediaAudio audio = new DLNAMediaAudio();
+					MediaAudio audio = new MediaAudio();
 					audio.setId(elements.getInt("ID"));
 					audio.setStreamId(elements.getInt("STREAM_ID"));
 					audio.setLang(elements.getString("LANG"));

@@ -19,9 +19,9 @@ package net.pms.parsers;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.nio.file.StandardOpenOption;
-import net.pms.dlna.DLNAMediaInfo;
 import net.pms.dlna.InputFile;
 import net.pms.formats.Format;
+import net.pms.media.Media;
 import net.pms.renderers.Renderer;
 import net.pms.util.AudioUtils;
 import org.slf4j.Logger;
@@ -39,7 +39,7 @@ public class MediaParser {
 	/**
 	 * Chooses which parsing method to parse the file with.
 	 */
-	public static void parse(DLNAMediaInfo media, InputFile file, Format ext, int type, Renderer renderer) {
+	public static void parse(Media media, InputFile file, Format ext, int type, Renderer renderer) {
 		if (file.getFile() != null) {
 			if (ext.getIdentifier() == Format.Identifier.RA) {
 				// Special parsing for RealAudio 1.0 and 2.0 which isn't handled by MediaInfo or JAudioTagger

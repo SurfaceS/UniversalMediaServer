@@ -30,12 +30,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import net.pms.configuration.FormatConfiguration;
-import net.pms.dlna.DLNAMediaAudio;
-import net.pms.dlna.DLNAMediaChapter;
-import net.pms.dlna.DLNAMediaInfo;
-import net.pms.dlna.DLNAMediaLang;
-import net.pms.dlna.DLNAMediaSubtitle;
-import net.pms.dlna.DLNAMediaVideo;
 import net.pms.dlna.DLNAThumbnail;
 import net.pms.dlna.InputFile;
 import net.pms.formats.Format;
@@ -44,6 +38,12 @@ import net.pms.image.ImageFormat;
 import net.pms.image.ImageInfo;
 import net.pms.image.ImagesUtil;
 import net.pms.image.ImagesUtil.ScaleType;
+import net.pms.media.Media;
+import net.pms.media.MediaAudio;
+import net.pms.media.MediaChapter;
+import net.pms.media.MediaLang;
+import net.pms.media.MediaSubtitle;
+import net.pms.media.MediaVideo;
 import net.pms.network.mediaserver.handlers.api.starrating.StarRating;
 import net.pms.parsers.mediainfo.InfoKind;
 import net.pms.parsers.mediainfo.MediaInfo;
@@ -145,7 +145,7 @@ public class MediaInfoParser {
 	/**
 	 * Parse media via MediaInfo.
 	 */
-	public static synchronized void parse(DLNAMediaInfo media, InputFile inputFile, int type) {
+	public static synchronized void parse(Media media, InputFile inputFile, int type) {
 		File file = inputFile.getFile();
 		ParseLogger parseLogger = LOGGER.isTraceEnabled() ? new ParseLogger() : null;
 		if (!media.isMediaparsed() && file != null && MI.isValid() && MI.openFile(file.getAbsolutePath()) > 0) {
@@ -154,9 +154,9 @@ public class MediaInfoParser {
 			StreamKind audio = StreamKind.AUDIO;
 			StreamKind image = StreamKind.IMAGE;
 			StreamKind text = StreamKind.TEXT;
-			DLNAMediaVideo currentVideoTrack;
-			DLNAMediaAudio currentAudioTrack;
-			DLNAMediaSubtitle currentSubTrack;
+			MediaVideo currentVideoTrack;
+			MediaAudio currentAudioTrack;
+			MediaSubtitle currentSubTrack;
 			media.setSize(file.length());
 			String value;
 
@@ -173,12 +173,12 @@ public class MediaInfoParser {
 				if (!chaptersPosBeginStr.isEmpty() && !chaptersPosEndStr.isEmpty()) {
 					int chaptersPosBegin = Integer.parseInt(chaptersPosBeginStr);
 					int chaptersPosEnd = Integer.parseInt(chaptersPosEndStr);
-					List<DLNAMediaChapter> chapters = new ArrayList<>();
+					List<MediaChapter> chapters = new ArrayList<>();
 					for (int i = chaptersPosBegin; i <= chaptersPosEnd; i++) {
 						String chapterName = MI.get(StreamKind.MENU, 0, i, InfoKind.NAME);
 						String chapterTitle = MI.get(StreamKind.MENU, 0, i, InfoKind.TEXT);
 						if (!chapterName.isEmpty()) {
-							DLNAMediaChapter chapter = new DLNAMediaChapter();
+							MediaChapter chapter = new MediaChapter();
 							LocalTime lt;
 							try {
 								lt = LocalTime.parse(chapterName, DateTimeFormatter.ofPattern("HH:mm:ss.SSS"));
@@ -193,7 +193,7 @@ public class MediaInfoParser {
 								chapters.get(chapters.size() - 1).setEnd(chapter.getStart());
 							}
 							if (!chapterTitle.isEmpty()) {
-								String lang = DLNAMediaLang.UND;
+								String lang = MediaLang.UND;
 								chapter.setLang(lang);
 								if (chapterTitle.startsWith(":")) {
 									chapterTitle = chapterTitle.substring(1);
@@ -202,7 +202,7 @@ public class MediaInfoParser {
 									chapterTitle = chapterTitle.substring(3);
 								}
 								//do not set title if it is default, it will be filled automatically later
-								if (!DLNAMediaChapter.isTitleDefault(chapterTitle)) {
+								if (!MediaChapter.isTitleDefault(chapterTitle)) {
 									chapter.setLang(lang);
 									chapter.setTitle(chapterTitle);
 								}
@@ -261,7 +261,7 @@ public class MediaInfoParser {
 				for (int i = 0; i < videoTrackCount; i++) {
 					// check for DXSA and DXSB subtitles (subs in video format)
 					if (MI.get(video, i, "Title").startsWith("Subtitle")) {
-						currentSubTrack = new DLNAMediaSubtitle();
+						currentSubTrack = new MediaSubtitle();
 						// First attempt to detect subtitle track format
 						currentSubTrack.setType(SubtitleType.valueOfMediaInfoValue(MI.get(video, i, "Format")));
 						// Second attempt to detect subtitle track format (CodecID usually is more accurate)
@@ -271,7 +271,7 @@ public class MediaInfoParser {
 						currentSubTrack.setId(media.getSubtitlesTracks().size());
 						addSub(currentSubTrack, media);
 					} else {
-						currentVideoTrack = new DLNAMediaVideo();
+						currentVideoTrack = new MediaVideo();
 						currentVideoTrack.setId(i);
 						value = MI.get(video, i, "ID");
 						if (!value.isEmpty()) {
@@ -355,7 +355,7 @@ public class MediaInfoParser {
 
 			if (audioTracks > 0) {
 				for (int i = 0; i < audioTracks; i++) {
-					currentAudioTrack = new DLNAMediaAudio();
+					currentAudioTrack = new MediaAudio();
 					currentAudioTrack.setId(i);
 					setAudioFormat(media, currentAudioTrack, MI.get(audio, i, "Format/String"), file);
 					setAudioFormat(media, currentAudioTrack, MI.get(audio, i, "Format_Version"), file);
@@ -381,7 +381,7 @@ public class MediaInfoParser {
 					if (languageCode == null && isNotBlank(value)) {
 						languageCode = Iso639.getISO639_2Code(value, true);
 						if (languageCode == null) {
-							languageCode = DLNAMediaLang.UND;
+							languageCode = MediaLang.UND;
 						}
 
 						currentAudioTrack.setLang(languageCode);
@@ -532,7 +532,7 @@ public class MediaInfoParser {
 
 			if (subTracks > 0) {
 				for (int i = 0; i < subTracks; i++) {
-					currentSubTrack = new DLNAMediaSubtitle();
+					currentSubTrack = new MediaSubtitle();
 					currentSubTrack.setId(i);
 					currentSubTrack.setType(SubtitleType.valueOfMediaInfoValue(MI.get(text, i, "CodecID"),
 						SubtitleType.valueOfMediaInfoValue(MI.get(text, i, "Format"))
@@ -553,7 +553,7 @@ public class MediaInfoParser {
 					if (languageCode == null && isNotBlank(value)) {
 						languageCode = Iso639.getISO639_2Code(value, true);
 						if (languageCode == null) {
-							languageCode = DLNAMediaLang.UND;
+							languageCode = MediaLang.UND;
 						}
 
 						currentSubTrack.setLang(languageCode);
@@ -593,7 +593,7 @@ public class MediaInfoParser {
 				) {
 					media.setContainer(FormatConfiguration.ASF);
 				} else {
-					for (DLNAMediaAudio audioTrack : media.getAudioTracks()) {
+					for (MediaAudio audioTrack : media.getAudioTracks()) {
 						if (
 							audioTrack.getCodecA() != null &&
 							!audioTrack.getCodecA().equals(FormatConfiguration.WMA) &&
@@ -674,14 +674,14 @@ public class MediaInfoParser {
 
 			MI.closeFile();
 			if (media.getContainer() == null) {
-				media.setContainer(DLNAMediaLang.UND);
+				media.setContainer(MediaLang.UND);
 			}
 
 			media.setMediaparsed(true);
 		}
 	}
 
-	private static void addMusicBrainzIDs(AudioFile af, File file, DLNAMediaAudio currentAudioTrack) {
+	private static void addMusicBrainzIDs(AudioFile af, File file, MediaAudio currentAudioTrack) {
 		try {
 			Tag t = af.getTag();
 			if (t != null) {
@@ -695,7 +695,7 @@ public class MediaInfoParser {
 		}
 	}
 
-	private static void addAudioTrackRating(AudioFile af, File file, DLNAMediaAudio currentAudioTrack) {
+	private static void addAudioTrackRating(AudioFile af, File file, MediaAudio currentAudioTrack) {
 		try {
 			Tag t = af.getTag();
 			if (t != null) {
@@ -706,55 +706,55 @@ public class MediaInfoParser {
 		}
 	}
 
-	private static void addVideo(DLNAMediaVideo currentVideoTrack, DLNAMediaInfo media) {
+	private static void addVideo(MediaVideo currentVideoTrack, Media media) {
 		if (isBlank(currentVideoTrack.getLang())) {
-			currentVideoTrack.setLang(DLNAMediaLang.UND);
+			currentVideoTrack.setLang(MediaLang.UND);
 		}
 
 		if (isBlank(currentVideoTrack.getCodec())) {
-			currentVideoTrack.setCodec(DLNAMediaLang.UND);
+			currentVideoTrack.setCodec(MediaLang.UND);
 		}
 
 		media.addVideoTrack(currentVideoTrack);
 	}
 
-	private static void addAudio(DLNAMediaAudio currentAudioTrack, DLNAMediaInfo media) {
+	private static void addAudio(MediaAudio currentAudioTrack, Media media) {
 		if (isBlank(currentAudioTrack.getLang())) {
-			currentAudioTrack.setLang(DLNAMediaLang.UND);
+			currentAudioTrack.setLang(MediaLang.UND);
 		}
 
 		if (isBlank(currentAudioTrack.getCodecA())) {
-			currentAudioTrack.setCodecA(DLNAMediaLang.UND);
+			currentAudioTrack.setCodecA(MediaLang.UND);
 		}
 
 		media.addAudioTrack(currentAudioTrack);
 	}
 
-	private static void addSub(DLNAMediaSubtitle currentSubTrack, DLNAMediaInfo media) {
+	private static void addSub(MediaSubtitle currentSubTrack, Media media) {
 		if (currentSubTrack.getType() == SubtitleType.UNSUPPORTED) {
 			return;
 		}
 
 		if (isBlank(currentSubTrack.getLang())) {
-			currentSubTrack.setLang(DLNAMediaLang.UND);
+			currentSubTrack.setLang(MediaLang.UND);
 		}
 
 		media.addSubtitlesTrack(currentSubTrack);
 	}
 
-	protected static void setGeneralFormat(DLNAMediaInfo media, String value, File file) {
+	protected static void setGeneralFormat(Media media, String value, File file) {
 		setFormat(StreamKind.GENERAL, media, null, null, value, file);
 	}
 
-	protected static void setVideoFormat(DLNAMediaInfo media, DLNAMediaVideo video, String value, File file) {
+	protected static void setVideoFormat(Media media, MediaVideo video, String value, File file) {
 		setFormat(StreamKind.VIDEO, media, video, null, value, file);
 	}
 
-	protected static void setAudioFormat(DLNAMediaInfo media, DLNAMediaAudio audio, String value, File file) {
+	protected static void setAudioFormat(Media media, MediaAudio audio, String value, File file) {
 		setFormat(StreamKind.AUDIO, media, null, audio, value, file);
 	}
 
-	private static void setImageFormat(DLNAMediaInfo media, String value, File file) {
+	private static void setImageFormat(Media media, String value, File file) {
 		setFormat(StreamKind.IMAGE, media, null, null, value, file);
 	}
 
@@ -777,7 +777,7 @@ public class MediaInfoParser {
 	 * @todo Split the values by streamType to make the logic more clear
 	 *       with less negative statements.
 	 */
-	protected static void setFormat(StreamKind streamType, DLNAMediaInfo media, DLNAMediaVideo video, DLNAMediaAudio audio, String value, File file) {
+	protected static void setFormat(StreamKind streamType, Media media, MediaVideo video, MediaAudio audio, String value, File file) {
 		if (isBlank(value)) {
 			return;
 		}

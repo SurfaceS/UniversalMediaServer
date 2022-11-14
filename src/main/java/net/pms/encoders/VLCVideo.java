@@ -26,7 +26,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.pms.Messages;
 import net.pms.configuration.UmsConfiguration;
-import net.pms.dlna.DLNAMediaInfo;
+import net.pms.media.Media;
 import net.pms.dlna.DLNAResource;
 import net.pms.formats.Format;
 import net.pms.io.*;
@@ -282,7 +282,7 @@ public class VLCVideo extends Engine {
 	 * @param params
 	 * @return a {@link List} of <code>String</code>s representing the video bitrate options for this transcode
 	 */
-	public List<String> getVideoBitrateOptions(DLNAResource dlna, DLNAMediaInfo media, OutputParams params) {
+	public List<String> getVideoBitrateOptions(DLNAResource dlna, Media media, OutputParams params) {
 		List<String> videoBitrateOptions = new ArrayList<>();
 
 		int[] defaultMaxBitrates = getVideoBitrateConfig(configuration.getMaximumBitrate());
@@ -435,7 +435,7 @@ public class VLCVideo extends Engine {
 	}
 
 	@Override
-	public ProcessWrapper launchTranscode(DLNAResource dlna, DLNAMediaInfo media, OutputParams params) throws IOException {
+	public ProcessWrapper launchTranscode(DLNAResource dlna, Media media, OutputParams params) throws IOException {
 		// Use device-specific pms conf
 		UmsConfiguration prev = configuration;
 		configuration = params.getMediaRenderer().getUmsConfiguration();

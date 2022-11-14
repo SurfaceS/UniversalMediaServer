@@ -26,10 +26,10 @@ import net.pms.configuration.FormatConfiguration;
 import net.pms.configuration.RendererConfiguration;
 import net.pms.configuration.RendererConfigurations;
 import net.pms.configuration.UmsConfiguration;
-import net.pms.dlna.DLNAMediaAudio;
-import net.pms.dlna.DLNAMediaInfo;
-import net.pms.dlna.DLNAMediaSubtitle;
-import net.pms.dlna.DLNAMediaVideo;
+import net.pms.media.MediaAudio;
+import net.pms.media.Media;
+import net.pms.media.MediaSubtitle;
+import net.pms.media.MediaVideo;
 import net.pms.dlna.DLNAResource;
 import net.pms.dlna.RealFile;
 import net.pms.formats.DVRMS;
@@ -80,7 +80,7 @@ public class FormatRecognitionTest {
 	}
 
     /**
-     * Test some basic functionality of {@link RendererConfiguration#isCompatible(DLNAMediaInfo, Format)}
+     * Test some basic functionality of {@link RendererConfiguration#isCompatible(Media, Format)}
      */
     @Test
     public void testRendererConfigurationBasics() {
@@ -105,12 +105,12 @@ public class FormatRecognitionTest {
 
 		// Construct regular two channel MP3 information
 		DLNAResource dlna = new RealFile(new File("test.mkv"));
-		DLNAMediaInfo info = new DLNAMediaInfo();
+		Media info = new Media();
 		info.setContainer("mp3");
 		info.setMimeType(HTTPResource.AUDIO_MP3_TYPEMIME);
-		DLNAMediaAudio audio = new DLNAMediaAudio();
+		MediaAudio audio = new MediaAudio();
 		audio.getAudioProperties().setNumberOfChannels(2);
-		List<DLNAMediaAudio> audioCodes = new ArrayList<>();
+		List<MediaAudio> audioCodes = new ArrayList<>();
 		audioCodes.add(audio);
 		info.setAudioTracks(audioCodes);
 		dlna.setMedia(info);
@@ -138,17 +138,17 @@ public class FormatRecognitionTest {
 
 		DLNAResource dlna = new RealFile(new File("test.mkv"));
 		// Construct regular two channel MPG information
-		DLNAMediaInfo info = new DLNAMediaInfo();
+		Media info = new Media();
 		info.setContainer("avi");
-		DLNAMediaAudio audio = new DLNAMediaAudio();
+		MediaAudio audio = new MediaAudio();
 		audio.setCodecA("ac3");
 		audio.getAudioProperties().setNumberOfChannels(5);
-		List<DLNAMediaAudio> audioTracks = new ArrayList<>();
+		List<MediaAudio> audioTracks = new ArrayList<>();
 		audioTracks.add(audio);
 		info.setAudioTracks(audioTracks);
-		DLNAMediaVideo video = new DLNAMediaVideo();
+		MediaVideo video = new MediaVideo();
 		video.setCodec("mp4");
-		List<DLNAMediaVideo> videoTracks = new ArrayList<>();
+		List<MediaVideo> videoTracks = new ArrayList<>();
 		videoTracks.add(video);
 		info.setVideoTracks(videoTracks);
 		Format format = new MPG();
@@ -176,17 +176,17 @@ public class FormatRecognitionTest {
 
 		DLNAResource dlna = new RealFile(new File("test.mkv"));
 		// Construct MKV information
-		DLNAMediaInfo info = new DLNAMediaInfo();
+		Media info = new Media();
 		info.setContainer("mkv");
-		DLNAMediaAudio audio = new DLNAMediaAudio();
+		MediaAudio audio = new MediaAudio();
 		audio.setCodecA("ac3");
 		audio.getAudioProperties().setNumberOfChannels(5);
-		List<DLNAMediaAudio> audioCodes = new ArrayList<>();
+		List<MediaAudio> audioCodes = new ArrayList<>();
 		audioCodes.add(audio);
 		info.setAudioTracks(audioCodes);
-		DLNAMediaVideo video = new DLNAMediaVideo();
+		MediaVideo video = new MediaVideo();
 		video.setCodec(FormatConfiguration.MP4);
-		List<DLNAMediaVideo> videoTracks = new ArrayList<>();
+		List<MediaVideo> videoTracks = new ArrayList<>();
 		videoTracks.add(video);
 		info.setVideoTracks(videoTracks);
 		Format format = new MPG();
@@ -197,7 +197,7 @@ public class FormatRecognitionTest {
 
 	/**
 	 * Test the compatibility of the
-	 * {@link Format#isCompatible(DLNAMediaInfo, RendererConfiguration)} for the
+	 * {@link Format#isCompatible(Media, RendererConfiguration)} for the
 	 * Sony Playstation 3 renderer.
 	 */
 	@Test
@@ -210,7 +210,7 @@ public class FormatRecognitionTest {
 
 		DLNAResource dlna = new RealFile(new File("test.mkv"));
 		// DVRMS: false
-		DLNAMediaInfo info = new DLNAMediaInfo();
+		Media info = new Media();
 		info.setContainer("dvr");
 		Format format = new DVRMS();
 		dlna.setMedia(info);
@@ -305,14 +305,14 @@ public class FormatRecognitionTest {
 
 		DLNAResource dlna = new RealFile(new File("test.mkv"));
 		// Construct media info exactly as VirtualVideoAction does
-		DLNAMediaInfo info = new DLNAMediaInfo();
+		Media info = new Media();
 		info.setContainer("mpegps");
-		List<DLNAMediaAudio> audioCodes = new ArrayList<>();
+		List<MediaAudio> audioCodes = new ArrayList<>();
 		info.setAudioTracks(audioCodes);
 		info.setMimeType("video/mpeg");
-		DLNAMediaVideo video = new DLNAMediaVideo();
+		MediaVideo video = new MediaVideo();
 		video.setCodec("mpeg2");
-		List<DLNAMediaVideo> videoTracks = new ArrayList<>();
+		List<MediaVideo> videoTracks = new ArrayList<>();
 		videoTracks.add(video);
 		info.setVideoTracks(videoTracks);
 		info.setMediaparsed(true);
@@ -329,7 +329,7 @@ public class FormatRecognitionTest {
 
 	/**
 	 * Test the compatibility of the subtitles in
-	 * {@link Format#isCompatible(DLNAMediaInfo, RendererConfiguration)} for
+	 * {@link Format#isCompatible(Media, RendererConfiguration)} for
 	 * given subtitles formats
 	 * @throws FileNotFoundException 
 	 */
@@ -341,14 +341,14 @@ public class FormatRecognitionTest {
 		assertNotNull(renderer, "Renderer named \"Panasonic TX-L32V10E\" not found.");
 		
 		DLNAResource dlna = new RealFile(new File("test.avi"));
-		DLNAMediaInfo info = new DLNAMediaInfo();
-		DLNAMediaAudio audio = new DLNAMediaAudio();
-		DLNAMediaSubtitle subs = new DLNAMediaSubtitle();
+		Media info = new Media();
+		MediaAudio audio = new MediaAudio();
+		MediaSubtitle subs = new MediaSubtitle();
 		audio.setCodecA(FormatConfiguration.AC3);
 		info.setContainer(FormatConfiguration.AVI);
-		DLNAMediaVideo video = new DLNAMediaVideo();
+		MediaVideo video = new MediaVideo();
 		video.setCodec(FormatConfiguration.MP4);
-		List<DLNAMediaVideo> videoTracks = new ArrayList<>();
+		List<MediaVideo> videoTracks = new ArrayList<>();
 		videoTracks.add(video);
 		info.setVideoTracks(videoTracks);
 		info.addAudioTrack(audio);

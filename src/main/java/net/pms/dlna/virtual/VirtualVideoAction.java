@@ -18,11 +18,11 @@ package net.pms.dlna.virtual;
 
 import java.io.IOException;
 import java.io.InputStream;
-import net.pms.dlna.DLNAMediaInfo;
-import net.pms.dlna.DLNAMediaVideo;
 import net.pms.dlna.DLNAResource;
 import net.pms.dlna.DLNAThumbnailInputStream;
 import net.pms.formats.FormatFactory;
+import net.pms.media.Media;
+import net.pms.media.MediaVideo;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -66,9 +66,9 @@ public abstract class VirtualVideoAction extends DLNAResource {
 
 		// Create correct mediaInfo for the embedded .mpg videos
 		// This is needed by Format.isCompatible()
-		DLNAMediaInfo mediaInfo = new DLNAMediaInfo();
+		Media mediaInfo = new Media();
 		mediaInfo.setContainer("mpegps");
-		DLNAMediaVideo video = new DLNAMediaVideo();
+		MediaVideo video = new MediaVideo();
 		mediaInfo.setMimeType("video/mpeg");
 		video.setCodec("mpeg2");
 		mediaInfo.addVideoTrack(video);
@@ -155,7 +155,7 @@ public abstract class VirtualVideoAction extends DLNAResource {
 	 */
 	@Override
 	public long length() {
-		return -1; //DLNAMediaInfo.TRANS_SIZE;
+		return -1;
 	}
 
 	@Override

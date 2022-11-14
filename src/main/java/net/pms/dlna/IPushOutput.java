@@ -19,6 +19,7 @@ package net.pms.dlna;
 import java.io.IOException;
 import java.io.OutputStream;
 
+//TODO : check if dlna related
 public interface IPushOutput {
 	public void push(OutputStream out) throws IOException;
 

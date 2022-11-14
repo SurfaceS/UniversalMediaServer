@@ -16,6 +16,9 @@
  */
 package net.pms.encoders;
 
+import net.pms.media.Media;
+import net.pms.media.MediaAudio;
+import net.pms.media.MediaSubtitle;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import com.sun.jna.Platform;
 import java.io.File;
@@ -113,7 +116,7 @@ public class TsMuxeRVideo extends Engine {
 	@Override
 	public ProcessWrapper launchTranscode(
 		DLNAResource dlna,
-		DLNAMediaInfo media,
+		Media media,
 		OutputParams params
 	) throws IOException {
 		// Use device-specific pms conf
@@ -388,7 +391,7 @@ public class TsMuxeRVideo extends Engine {
 					ffAudioPipe = new PipeIPCProcess[numAudioTracks];
 					ffAudio = new ProcessWrapperImpl[numAudioTracks];
 					for (int i = 0; i < media.getAudioTracks().size(); i++) {
-						DLNAMediaAudio audio = media.getAudioTracks().get(i);
+						MediaAudio audio = media.getAudioTracks().get(i);
 						ffAudioPipe[i] = new PipeIPCProcess(System.currentTimeMillis() + "ffmpeg" + i, System.currentTimeMillis() + "audioout" + i, false, true);
 
 						encodedAudioPassthrough = configuration.isEncodedAudioPassthrough() && params.getMediaAudio().isNonPCMEncodedAudio() && params.getMediaRenderer().isWrapEncodedAudioIntoPCM();
@@ -569,7 +572,7 @@ public class TsMuxeRVideo extends Engine {
 				pw.println(type + ", \"" + ffAudioPipe[0].getOutputPipe() + "\", " + timeshift + "track=2");
 			} else if (ffAudioPipe != null) {
 				for (int i = 0; i < media.getAudioTracks().size(); i++) {
-					DLNAMediaAudio lang = media.getAudioTracks().get(i);
+					MediaAudio lang = media.getAudioTracks().get(i);
 					String timeshift = "";
 					boolean ac3Remux;
 					boolean dtsRemux;
@@ -713,10 +716,10 @@ public class TsMuxeRVideo extends Engine {
 
 	@Override
 	public boolean isCompatible(DLNAResource resource) {
-		DLNAMediaSubtitle subtitle = resource.getMediaSubtitle();
+		MediaSubtitle subtitle = resource.getMediaSubtitle();
 
 		// Check whether the subtitle actually has a language defined,
-		// uninitialized DLNAMediaSubtitle objects have a null language.
+		// uninitialized MediaSubtitle objects have a null language.
 		if (subtitle != null && subtitle.getLang() != null) {
 			// The resource needs a subtitle, but PMS does not support subtitles for tsMuxeR.
 			return false;

@@ -16,6 +16,7 @@
  */
 package net.pms.dlna;
 
+import net.pms.media.MediaAudio;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
@@ -23,14 +24,14 @@ public class DLNAMediaAudioTest {
 
 	@Test
 	public void testDefaultAudioProperties() {
-		DLNAMediaAudio dlnaMediaAudio = new DLNAMediaAudio();
+		MediaAudio dlnaMediaAudio = new MediaAudio();
 		assertNotNull(dlnaMediaAudio.getAudioProperties());
 	}
 
 	@Test
 	public void testSetAudioProperties_withNullAudioProperties() {
 		assertThrows(IllegalArgumentException.class, () -> {
-			DLNAMediaAudio dlnaMediaAudio = new DLNAMediaAudio();
+			MediaAudio dlnaMediaAudio = new MediaAudio();
 			dlnaMediaAudio.setAudioProperties(null);
 		});
 	}

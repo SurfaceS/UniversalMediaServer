@@ -16,6 +16,8 @@
  */
 package net.pms.dlna;
 
+import net.pms.dlna.virtual.SearchFolder;
+import net.pms.dlna.virtual.PlaylistFolder;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;

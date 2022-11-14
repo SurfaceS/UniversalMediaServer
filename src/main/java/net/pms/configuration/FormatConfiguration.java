@@ -20,8 +20,8 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import net.pms.dlna.DLNAMediaAudio;
-import net.pms.dlna.DLNAMediaInfo;
+import net.pms.media.MediaAudio;
+import net.pms.media.Media;
 import net.pms.dlna.DLNAResource;
 import net.pms.io.OutputParams;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -340,7 +340,7 @@ public class FormatConfiguration {
 		}
 
 		public boolean match(DLNAResource dlna) {
-			DLNAMediaInfo media = dlna.getMedia();
+			Media media = dlna.getMedia();
 			if (dlna.getMediaSubtitle() != null) {
 				return match(
 					media.getContainer(),
@@ -581,7 +581,7 @@ public class FormatConfiguration {
 	 * @return The MIME type or null if no match was found.
 	 */
 	public String getMatchedMIMEtype(DLNAResource dlna, RendererConfiguration renderer) {
-		DLNAMediaInfo media = dlna.getMedia();
+		Media media = dlna.getMedia();
 		if (media == null) {
 			return null;
 		}
@@ -630,7 +630,7 @@ public class FormatConfiguration {
 			* stream. Because of this, only compatibility for the first audio
 			* track needs to be checked.
 			*/
-			DLNAMediaAudio audio = media.getFirstAudioTrack();
+			MediaAudio audio = media.getFirstAudioTrack();
 			return getMatchedMIMEtype(
 				media.getContainer(),
 				media.getCodecV(),
@@ -651,7 +651,7 @@ public class FormatConfiguration {
 
 		String finalMimeType = null;
 
-		for (DLNAMediaAudio audio : media.getAudioTracks()) {
+		for (MediaAudio audio : media.getAudioTracks()) {
 			String mimeType = getMatchedMIMEtype(
 				media.getContainer(),
 				media.getCodecV(),
@@ -707,7 +707,7 @@ public class FormatConfiguration {
 	 * send to renderer
 	 * @return The MIME type or null if no match was found.
 	 */
-	public String getMatchedMIMEtype(DLNAMediaInfo media, OutputParams params) {
+	public String getMatchedMIMEtype(Media media, OutputParams params) {
 		return getMatchedMIMEtype(
 			media.getContainer(),
 			media.getCodecV(),

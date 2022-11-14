@@ -16,6 +16,7 @@
  */
 package net.pms.database;
 
+import net.pms.media.Media;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import net.pms.dlna.*;
 import java.io.EOFException;
@@ -432,7 +433,7 @@ public class MediaTableFiles extends MediaTable {
 	}
 
 	/**
-	 * Checks whether a row representing a {@link DLNAMediaInfo} instance for
+	 * Checks whether a row representing a {@link Media} instance for
 	 * the given media exists in the database.
 	 *
 	 * @param connection the db connection
@@ -497,18 +498,18 @@ public class MediaTableFiles extends MediaTable {
 
 	/**
 	 * Gets a row of {@link MediaDatabase} from the database and returns it
-	 * as a {@link DLNAMediaInfo} instance, along with thumbnails, status and tracks.
+	 * as a {@link Media} instance, along with thumbnails, status and tracks.
 	 *
 	 * @param connection the db connection
 	 * @param name the full path of the media.
 	 * @param modified the current {@code lastModified} value of the media file.
-	 * @return The {@link DLNAMediaInfo} instance matching
+	 * @return The {@link Media} instance matching
 	 *         {@code name} and {@code modified}.
 	 * @throws SQLException if an SQL error occurs during the operation.
 	 * @throws IOException if an IO error occurs during the operation.
 	 */
-	public static DLNAMediaInfo getData(final Connection connection, String name, long modified) throws IOException, SQLException {
-		DLNAMediaInfo media = null;
+	public static Media getData(final Connection connection, String name, long modified) throws IOException, SQLException {
+		Media media = null;
 		try {
 			try (
 				PreparedStatement stmt = connection.prepareStatement(SQL_GET_ALL_FILENAME_MODIFIED);
@@ -521,7 +522,7 @@ public class MediaTableFiles extends MediaTable {
 				) {
 					if (rs.next()) {
 						int id = rs.getInt("ID");
-						media = new DLNAMediaInfo();
+						media = new Media();
 						media.setMediaparsed(rs.getBoolean(COL_PARSED));
 						media.setContainer(rs.getString("CONTAINER"));
 						media.setDuration(toDouble(rs, "DURATION"));
@@ -599,7 +600,7 @@ public class MediaTableFiles extends MediaTable {
 
 	/**
 	 * Gets a row of {@link MediaDatabase} from the database and returns it
-	 * as a {@link DLNAMediaInfo} instance.
+	 * as a {@link Media} instance.
 	 * This is the same as getData above, but is a much smaller query because it
 	 * does not fetch thumbnails, status and tracks, and does not require a
 	 * modified value to be passed, which means we can avoid touching the filesystem
@@ -607,15 +608,15 @@ public class MediaTableFiles extends MediaTable {
 	 *
 	 * @param connection the db connection
 	 * @param name the full path of the media.
-	 * @return The {@link DLNAMediaInfo} instance matching
+	 * @return The {@link Media} instance matching
 	 *         {@code name} and {@code modified}.
 	 * @throws SQLException if an SQL error occurs during the operation.
 	 * @throws IOException if an IO error occurs during the operation.
 	 */
-	public static DLNAMediaInfo getFileMetadata(final Connection connection, String name) throws IOException, SQLException {
+	public static Media getFileMetadata(final Connection connection, String name) throws IOException, SQLException {
 		Long id = getFileId(connection, name);
 		if (id != null) {
-			DLNAMediaInfo media = new DLNAMediaInfo();
+			Media media = new Media();
 			media.setVideoMetadata(MediaTableVideoMetadata.getVideoMetadataByFileId(connection, id));
 			media.setMediaparsed(true);
 			return media;
@@ -624,7 +625,7 @@ public class MediaTableFiles extends MediaTable {
 	}
 
 	/**
-	 * Inserts or updates a database row representing an {@link DLNAMediaInfo}
+	 * Inserts or updates a database row representing an {@link Media}
 	 * instance. If the row already exists, it will be updated with the
 	 * information given in {@code media}. If it doesn't exist, a new will row
 	 * be created using the same information.
@@ -634,10 +635,10 @@ public class MediaTableFiles extends MediaTable {
 	 * @param modified the current {@code lastModified} value of the media file.
 	 * @param type the integer constant from {@link Format} indicating the type
 	 *            of media.
-	 * @param media the {@link DLNAMediaInfo} row to update.
+	 * @param media the {@link Media} row to update.
 	 * @throws SQLException if an SQL error occurs during the operation.
 	 */
-	public static void insertOrUpdateData(final Connection connection, String name, long modified, int type, DLNAMediaInfo media) throws SQLException {
+	public static void insertOrUpdateData(final Connection connection, String name, long modified, int type, Media media) throws SQLException {
 		try {
 			String columns = "FILENAME, MODIFIED, FORMAT_TYPE, PARSED, DURATION, BITRATE, MEDIA_SIZE, FRAMERATE, " +
 				"ASPECTRATIODVD, IMAGEINFO, CONTAINER, STEREOSCOPY, TITLECONTAINER, IMAGECOUNT";

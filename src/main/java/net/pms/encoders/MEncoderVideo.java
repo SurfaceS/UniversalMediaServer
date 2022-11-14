@@ -16,6 +16,8 @@
  */
 package net.pms.encoders;
 
+import net.pms.media.Media;
+import net.pms.media.MediaSubtitle;
 import bsh.EvalError;
 import bsh.Interpreter;
 import com.sun.jna.Platform;
@@ -295,7 +297,7 @@ public class MEncoderVideo extends Engine {
 	 *
 	 * @return The maximum bitrate the video should be along with the buffer size using MEncoder vars
 	 */
-	private String addMaximumBitrateConstraints(String encodeSettings, DLNAMediaInfo media, String quality, Renderer renderer, String audioType) {
+	private String addMaximumBitrateConstraints(String encodeSettings, Media media, String quality, Renderer renderer, String audioType) {
 		// Use device-specific UMS conf
 		UmsConfiguration dConfiguration = PMS.getConfiguration(renderer);
 		int[] defaultMaxBitrates = getVideoBitrateConfig(dConfiguration.getMaximumBitrate());
@@ -421,7 +423,7 @@ public class MEncoderVideo extends Engine {
 	@Override
 	public ProcessWrapper launchTranscode(
 		DLNAResource dlna,
-		DLNAMediaInfo media,
+		Media media,
 		OutputParams params
 	) throws IOException {
 		// Use device-specific UMS conf
@@ -1303,7 +1305,7 @@ public class MEncoderVideo extends Engine {
 				) {
 					// Only transcode subtitles if they aren't streamable
 					cmdList.add("-sub");
-					DLNAMediaSubtitle convertedSubs = dlna.getMediaSubtitle();
+					MediaSubtitle convertedSubs = dlna.getMediaSubtitle();
 					if (media.is3d()) {
 						if (convertedSubs != null && convertedSubs.getConvertedFile() != null) { // subs are already converted to 3D so use them
 							cmdList.add(convertedSubs.getConvertedFile().getAbsolutePath().replace(",", "\\,"));
@@ -2112,7 +2114,7 @@ public class MEncoderVideo extends Engine {
 
 	public static String[] getSpecificCodecOptions(
 		String codecParam,
-		DLNAMediaInfo media,
+		Media media,
 		OutputParams params,
 		String filename,
 		String externalSubtitlesFileName,

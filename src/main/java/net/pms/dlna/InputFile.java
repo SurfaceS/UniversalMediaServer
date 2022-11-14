@@ -18,6 +18,7 @@ package net.pms.dlna;
 
 import java.io.File;
 
+//TODO : check if dlna related
 public class InputFile {
 
 	private File file;

@@ -16,6 +16,8 @@
  */
 package net.pms.dlna;
 
+import net.pms.dlna.protocolinfo.DLNAImageProfile;
+import net.pms.dlna.protocolinfo.DLNAProfileException;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.io.IOException;

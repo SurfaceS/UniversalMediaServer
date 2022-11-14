@@ -39,17 +39,17 @@ import java.sql.Connection;
 import java.util.*;
 import net.pms.Messages;
 import net.pms.PMS;
-import net.pms.renderers.devices.WebRender;
 import net.pms.database.MediaDatabase;
 import net.pms.database.MediaTableTVSeries;
 import net.pms.database.MediaTableVideoMetadata;
-import net.pms.dlna.ByteRange;
-import net.pms.dlna.DLNAMediaInfo;
 import net.pms.dlna.DLNAResource;
 import net.pms.dlna.RootFolder;
+import net.pms.media.Media;
+import net.pms.network.ByteRange;
 import net.pms.network.HTTPResource;
 import net.pms.renderers.ConnectedRenderers;
 import net.pms.renderers.Renderer;
+import net.pms.renderers.devices.WebRender;
 import net.pms.util.APIUtils;
 import net.pms.util.FileUtil;
 import net.pms.util.FileWatcher;
@@ -510,7 +510,7 @@ public class WebInterfaceServerUtil {
 		return getHW(PMS.getConfiguration().getWebWidth(), WIDTH, DEFAULT_WIDTH);
 	}
 
-	public static boolean transMp4(String mime, DLNAMediaInfo media) {
+	public static boolean transMp4(String mime, Media media) {
 		LOGGER.debug("mp4 profile " + media.getCodecProfile());
 		return mime.equals(HTTPResource.MP4_TYPEMIME) && (PMS.getConfiguration().isWebPlayerMp4Trans() || media.getCodecLevelAsInt() >= 40);
 	}

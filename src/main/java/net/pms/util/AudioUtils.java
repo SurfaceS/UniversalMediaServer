@@ -26,11 +26,11 @@ import java.util.Arrays;
 import java.util.Locale;
 import net.pms.PMS;
 import net.pms.configuration.FormatConfiguration;
-import net.pms.dlna.DLNAMediaAudio;
-import net.pms.dlna.DLNAMediaInfo;
 import net.pms.dlna.DLNAThumbnail;
 import net.pms.image.ImageFormat;
 import net.pms.image.ImagesUtil.ScaleType;
+import net.pms.media.Media;
+import net.pms.media.MediaAudio;
 import org.apache.commons.lang3.StringUtils;
 import org.jaudiotagger.tag.FieldKey;
 import org.jaudiotagger.tag.Tag;
@@ -71,10 +71,10 @@ public final class AudioUtils {
 	 * Due to mencoder/ffmpeg bug we need to manually remap audio channels for LPCM
 	 * output. This function generates argument for channels/pan audio filters
 	 *
-	 * @param audioTrack DLNAMediaAudio resource
+	 * @param audioTrack MediaAudio resource
 	 * @return argument for -af option or null if we can't remap to desired numberOfOutputChannels
 	 */
-	public static String getLPCMChannelMappingForMencoder(DLNAMediaAudio audioTrack) {
+	public static String getLPCMChannelMappingForMencoder(MediaAudio audioTrack) {
 		// for reference
 		// Channel Arrangement for Multi Channel Audio Formats
 		// http://avisynth.org/mediawiki/GetChannel
@@ -140,16 +140,16 @@ public final class AudioUtils {
 	 * @param channel the {@link Channel} containing the input. Size will only
 	 *            be parsed if {@code channel} is a {@link FileChannel}
 	 *            instance.
-	 * @param media the {@link DLNAMediaInfo} instance to write the parsing
+	 * @param media the {@link Media} instance to write the parsing
 	 *            results to.
 	 * @return {@code true} if the {@code channel} input is in RealAudio 1.0 or
 	 *         2.0 format and the parsing succeeds; false otherwise
 	 */
-	public static boolean parseRealAudio(ReadableByteChannel channel, DLNAMediaInfo media) {
+	public static boolean parseRealAudio(ReadableByteChannel channel, Media media) {
 		final byte[] magicBytes = {0x2E, 0x72, 0x61, (byte) 0xFD};
 		ByteBuffer buffer = ByteBuffer.allocate(8);
 		buffer.order(ByteOrder.BIG_ENDIAN);
-		DLNAMediaAudio audio = new DLNAMediaAudio();
+		MediaAudio audio = new MediaAudio();
 		try {
 			int count = channel.read(buffer);
 			if (count < 4) {
@@ -172,105 +172,108 @@ public final class AudioUtils {
 			short version = buffer.getShort();
 			int reportedHeaderSize = 0;
 			int reportedDataSize = 0;
-			if (version == 3) {
-				audio.setCodecA(FormatConfiguration.REALAUDIO_14_4);
-				audio.getAudioProperties().setNumberOfChannels(1);
-				audio.getAudioProperties().setSampleFrequency(8000);
-				short headerSize = buffer.getShort();
-
-				buffer = ByteBuffer.allocate(headerSize);
-				channel.read(buffer);
-				buffer.flip();
-				buffer.position(8);
-				int bytesPerMinute = buffer.getShort() & 0xFFFF;
-				reportedDataSize = buffer.getInt();
-				byte b = buffer.get();
-				if (b != 0) {
-					byte[] title = new byte[b & 0xFF];
-					buffer.get(title);
-					String titleString = new String(title, StandardCharsets.US_ASCII);
-					audio.setSongname(titleString);
-					audio.setAudioTrackTitleFromMetadata(titleString);
-				}
-				b = buffer.get();
-				if (b != 0) {
-					byte[] artist = new byte[b & 0xFF];
-					buffer.get(artist);
-					audio.setArtist(new String(artist, StandardCharsets.US_ASCII));
-				}
-				audio.setBitRate(bytesPerMinute * 8 / 60);
-				media.setBitrate(bytesPerMinute * 8 / 60);
-			} else if (version == 4 || version == 5) {
-				buffer = ByteBuffer.allocate(14);
-				channel.read(buffer);
-				buffer.flip();
-				buffer.get(signature);
-				if (!".ra4".equals(new String(signature, StandardCharsets.US_ASCII))) {
-					LOGGER.debug("Invalid RealAudio 2.0 signature \"{}\"", new String(signature, StandardCharsets.US_ASCII));
-					return false;
-				}
-				reportedDataSize = buffer.getInt();
-				buffer.getShort(); //skip version repeated
-				reportedHeaderSize = buffer.getInt();
-
-				buffer = ByteBuffer.allocate(reportedHeaderSize);
-				channel.read(buffer);
-				buffer.flip();
-				buffer.getShort(); // skip codec flavor
-				buffer.getInt(); // skip coded frame size
-				buffer.getInt(); // skip unknown
-				long bytesPerMinute = buffer.getInt() & 0xFFFFFFFFL;
-				buffer.getInt(); // skip unknown
-				buffer.getShort(); // skip sub packet
-				buffer.getShort(); // skip frame size
-				buffer.getShort(); // skip sub packet size
-				buffer.getShort(); // skip unknown
-				if (version == 5) {
-					buffer.position(buffer.position() + 6); // skip unknown
-				}
-				short sampleRate = buffer.getShort();
-				buffer.getShort(); // skip unknown
-				short sampleSize = buffer.getShort();
-				short nrChannels = buffer.getShort();
-				byte[] fourCC;
-				if (version == 4) {
-					buffer.position(buffer.get() + buffer.position()); // skip interleaver id
-					fourCC = new byte[buffer.get()];
-					buffer.get(fourCC);
-				} else {
-					buffer.getFloat(); // skip deinterlace id
-					fourCC = new byte[4];
-					buffer.get(fourCC);
-				}
-				String fourCCString = new String(fourCC, StandardCharsets.US_ASCII).toLowerCase(Locale.ROOT);
-				switch (fourCCString) {
-					case "lpcJ" -> audio.setCodecA(FormatConfiguration.REALAUDIO_14_4);
-					case "28_8" -> audio.setCodecA(FormatConfiguration.REALAUDIO_28_8);
-					case "dnet" -> audio.setCodecA(FormatConfiguration.AC3);
-					case "sipr" -> audio.setCodecA(FormatConfiguration.SIPRO);
-					case "cook" -> audio.setCodecA(FormatConfiguration.COOK);
-					case "atrc" -> audio.setCodecA(FormatConfiguration.ATRAC);
-					case "ralf" -> audio.setCodecA(FormatConfiguration.RALF);
-					case "raac" -> audio.setCodecA(FormatConfiguration.AAC_LC);
-					case "racp" -> audio.setCodecA(FormatConfiguration.HE_AAC);
-					default -> {
-						LOGGER.debug("Unknown RealMedia codec FourCC \"{}\" - parsing failed", fourCCString);
+			switch (version) {
+				case 3 -> {
+						audio.setCodecA(FormatConfiguration.REALAUDIO_14_4);
+						audio.getAudioProperties().setNumberOfChannels(1);
+						audio.getAudioProperties().setSampleFrequency(8000);
+						short headerSize = buffer.getShort();
+						buffer = ByteBuffer.allocate(headerSize);
+						channel.read(buffer);
+						buffer.flip();
+						buffer.position(8);
+						int bytesPerMinute = buffer.getShort() & 0xFFFF;
+						reportedDataSize = buffer.getInt();
+						byte b = buffer.get();
+						if (b != 0) {
+							byte[] title = new byte[b & 0xFF];
+							buffer.get(title);
+							String titleString = new String(title, StandardCharsets.US_ASCII);
+							audio.setSongname(titleString);
+							audio.setAudioTrackTitleFromMetadata(titleString);
+						}
+						b = buffer.get();
+						if (b != 0) {
+							byte[] artist = new byte[b & 0xFF];
+							buffer.get(artist);
+							audio.setArtist(new String(artist, StandardCharsets.US_ASCII));
+						}
+						audio.setBitRate(bytesPerMinute * 8 / 60);
+						media.setBitrate(bytesPerMinute * 8 / 60);
+					}
+				case 4, 5 -> {
+					buffer = ByteBuffer.allocate(14);
+					channel.read(buffer);
+					buffer.flip();
+					buffer.get(signature);
+					if (!".ra4".equals(new String(signature, StandardCharsets.US_ASCII))) {
+						LOGGER.debug("Invalid RealAudio 2.0 signature \"{}\"", new String(signature, StandardCharsets.US_ASCII));
 						return false;
 					}
-				}
+					reportedDataSize = buffer.getInt();
+					buffer.getShort(); //skip version repeated
+					reportedHeaderSize = buffer.getInt();
 
-				if (buffer.hasRemaining()) {
-					parseRealAudioMetaData(buffer, audio, version);
-				}
+					buffer = ByteBuffer.allocate(reportedHeaderSize);
+					channel.read(buffer);
+					buffer.flip();
+					buffer.getShort(); // skip codec flavor
+					buffer.getInt(); // skip coded frame size
+					buffer.getInt(); // skip unknown
+					long bytesPerMinute = buffer.getInt() & 0xFFFFFFFFL;
+					buffer.getInt(); // skip unknown
+					buffer.getShort(); // skip sub packet
+					buffer.getShort(); // skip frame size
+					buffer.getShort(); // skip sub packet size
+					buffer.getShort(); // skip unknown
+					if (version == 5) {
+						buffer.position(buffer.position() + 6); // skip unknown
+					}
+					short sampleRate = buffer.getShort();
+					buffer.getShort(); // skip unknown
+					short sampleSize = buffer.getShort();
+					short nrChannels = buffer.getShort();
+					byte[] fourCC;
+					if (version == 4) {
+						buffer.position(buffer.get() + buffer.position()); // skip interleaver id
+						fourCC = new byte[buffer.get()];
+						buffer.get(fourCC);
+					} else {
+						buffer.getFloat(); // skip deinterlace id
+						fourCC = new byte[4];
+						buffer.get(fourCC);
+					}
+					String fourCCString = new String(fourCC, StandardCharsets.US_ASCII).toLowerCase(Locale.ROOT);
+					switch (fourCCString) {
+						case "lpcJ" -> audio.setCodecA(FormatConfiguration.REALAUDIO_14_4);
+						case "28_8" -> audio.setCodecA(FormatConfiguration.REALAUDIO_28_8);
+						case "dnet" -> audio.setCodecA(FormatConfiguration.AC3);
+						case "sipr" -> audio.setCodecA(FormatConfiguration.SIPRO);
+						case "cook" -> audio.setCodecA(FormatConfiguration.COOK);
+						case "atrc" -> audio.setCodecA(FormatConfiguration.ATRAC);
+						case "ralf" -> audio.setCodecA(FormatConfiguration.RALF);
+						case "raac" -> audio.setCodecA(FormatConfiguration.AAC_LC);
+						case "racp" -> audio.setCodecA(FormatConfiguration.HE_AAC);
+						default -> {
+							LOGGER.debug("Unknown RealMedia codec FourCC \"{}\" - parsing failed", fourCCString);
+							return false;
+						}
+					}
 
-				audio.setBitRate((int) (bytesPerMinute * 8 / 60));
-				media.setBitrate((int) (bytesPerMinute * 8 / 60));
-				audio.setBitsperSample(sampleSize);
-				audio.getAudioProperties().setNumberOfChannels(nrChannels);
-				audio.getAudioProperties().setSampleFrequency(sampleRate);
-			} else {
-				LOGGER.error("Could not parse RealAudio format - unknown format version {}", version);
-				return false;
+					if (buffer.hasRemaining()) {
+						parseRealAudioMetaData(buffer, audio, version);
+					}
+
+					audio.setBitRate((int) (bytesPerMinute * 8 / 60));
+					media.setBitrate((int) (bytesPerMinute * 8 / 60));
+					audio.setBitsperSample(sampleSize);
+					audio.getAudioProperties().setNumberOfChannels(nrChannels);
+					audio.getAudioProperties().setSampleFrequency(sampleRate);
+				}
+				default -> 				{
+					LOGGER.error("Could not parse RealAudio format - unknown format version {}", version);
+					return false;
+				}
 			}
 
 			media.addAudioTrack(audio);
@@ -338,7 +341,7 @@ public final class AudioUtils {
 		return true;
 	}
 
-	private static void parseRealAudioMetaData(ByteBuffer buffer, DLNAMediaAudio audio, short version) {
+	private static void parseRealAudioMetaData(ByteBuffer buffer, MediaAudio audio, short version) {
 		buffer.position(buffer.position() + (version == 4 ? 3 : 4)); // skip unknown
 		byte b = buffer.get();
 		if (b != 0) {

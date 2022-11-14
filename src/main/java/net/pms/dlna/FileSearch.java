@@ -16,6 +16,7 @@
  */
 package net.pms.dlna;
 
+import net.pms.dlna.virtual.SearchObj;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;

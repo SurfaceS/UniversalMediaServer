@@ -16,6 +16,7 @@
  */
 package net.pms.dlna;
 
+import net.pms.dlna.protocolinfo.DLNAImageProfile;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -23,6 +24,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import net.pms.formats.Format;
+import net.pms.media.Media;
 import net.pms.parsers.MediaParser;
 import net.pms.util.FileUtil;
 import net.sf.sevenzipjbinding.IInArchive;
@@ -42,7 +44,7 @@ public class SevenZipEntry extends DLNAResource implements IPushOutput {
 	private IInArchive arc;
 
 	@Override
-	protected String getThumbnailURL(DLNAImageProfile profile) {
+	public String getThumbnailURL(DLNAImageProfile profile) {
 		if (getType() == Format.IMAGE || getType() == Format.AUDIO) {
 			// no thumbnail support for now for zipped videos
 			return null;
@@ -70,7 +72,7 @@ public class SevenZipEntry extends DLNAResource implements IPushOutput {
 	@Override
 	public long length() {
 		if (getEngine() != null && getEngine().type() != Format.IMAGE) {
-			return DLNAMediaInfo.TRANS_SIZE;
+			return Media.TRANS_SIZE;
 		}
 
 		return length;
@@ -150,7 +152,7 @@ public class SevenZipEntry extends DLNAResource implements IPushOutput {
 			return;
 		}
 		if (getMedia() == null) {
-			setMedia(new DLNAMediaInfo());
+			setMedia(new Media());
 		}
 		InputFile input = new InputFile();
 		input.setPush(this);

@@ -32,6 +32,9 @@ import net.pms.formats.Format;
 import net.pms.formats.v2.SubtitleType;
 import net.pms.io.OutputParams;
 import net.pms.io.ProcessWrapperImpl;
+import net.pms.media.Media;
+import net.pms.media.MediaAudio;
+import net.pms.media.MediaSubtitle;
 import net.pms.renderers.Renderer;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.lang3.StringUtils;
@@ -83,7 +86,7 @@ public class UMSUtils {
 				keep = res.getName().toLowerCase().contains(searchString);
 			}
 
-			final DLNAMediaInfo media = res.getMedia();
+			final Media media = res.getMedia();
 
 			if (keep && isExpectOneResult) {
 				resources.clear();
@@ -94,7 +97,7 @@ public class UMSUtils {
 			if (!keep) {
 				if (media != null && media.getAudioTracks() != null) {
 					for (int j = 0; j < media.getAudioTracks().size(); j++) {
-						DLNAMediaAudio audio = media.getAudioTracks().get(j);
+						MediaAudio audio = media.getAudioTracks().get(j);
 						if (audio.getAlbum() != null) {
 							keep |= audio.getAlbum().toLowerCase().contains(searchString);
 						}
@@ -370,7 +373,7 @@ public class UMSUtils {
 							sb.append(';');
 						}
 						if (r.getMediaSubtitle() != null) {
-							DLNAMediaSubtitle sub = r.getMediaSubtitle();
+							MediaSubtitle sub = r.getMediaSubtitle();
 							if (
 								sub.getLang() != null &&
 								(
@@ -524,9 +527,9 @@ public class UMSUtils {
 						}
 						res.setEngine(player);
 						if (subData != null) {
-							DLNAMediaSubtitle s = res.getMediaSubtitle();
+							MediaSubtitle s = res.getMediaSubtitle();
 							if (s == null) {
-								s = new DLNAMediaSubtitle();
+								s = new MediaSubtitle();
 								res.setMediaSubtitle(s);
 							}
 							String[] tmp = subData.split(",");

@@ -32,7 +32,7 @@ import net.pms.util.ExecutableInfo;
 import net.pms.util.ExecutableInfo.ExecutableInfoBuilder;
 import net.pms.util.ExternalProgramInfo;
 import net.pms.configuration.UmsConfiguration;
-import net.pms.dlna.DLNAMediaInfo;
+import net.pms.media.Media;
 import net.pms.dlna.DLNAResource;
 import net.pms.formats.Format;
 import net.pms.io.IPipeProcess;
@@ -131,7 +131,7 @@ public class VideoLanVideoStreaming extends Engine {
 	@Override
 	public ProcessWrapper launchTranscode(
 		DLNAResource dlna,
-		DLNAMediaInfo media,
+		Media media,
 		OutputParams params) throws IOException {
 		// Use device-specific pms conf
 		UmsConfiguration prev = configuration;

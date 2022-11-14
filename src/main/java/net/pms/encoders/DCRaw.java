@@ -35,7 +35,7 @@ import net.pms.util.ExecutableErrorType;
 import net.pms.util.ExecutableInfo;
 import net.pms.util.ExecutableInfo.ExecutableInfoBuilder;
 import net.pms.util.ExternalProgramInfo;
-import net.pms.dlna.DLNAMediaInfo;
+import net.pms.media.Media;
 import net.pms.dlna.DLNAResource;
 import net.pms.formats.Format;
 import net.pms.image.ExifInfo;
@@ -96,7 +96,7 @@ public class DCRaw extends ImageEngine {
 	@Override
 	public ProcessWrapper launchTranscode(
 		DLNAResource dlna,
-		DLNAMediaInfo media,
+		Media media,
 		OutputParams params
 	) throws IOException {
 		if (media == null || dlna == null) {
@@ -324,12 +324,12 @@ public class DCRaw extends ImageEngine {
 	/**
 	 * Parses {@code file} and stores the result in {@code media}.
 	 *
-	 * @param media the {@link DLNAMediaInfo} instance to store the parse
+	 * @param media the {@link Media} instance to store the parse
 	 *            results in.
 	 * @param file the {@link File} to parse.
 	 */
 	@Override
-	public void parse(DLNAMediaInfo media, File file) {
+	public void parse(Media media, File file) {
 		if (media == null) {
 			throw new NullPointerException("media cannot be null");
 		}

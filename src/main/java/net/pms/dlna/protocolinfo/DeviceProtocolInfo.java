@@ -29,7 +29,6 @@ import org.apache.commons.text.translate.CharSequenceTranslator;
 import org.apache.commons.text.translate.LookupTranslator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import net.pms.dlna.DLNAImageProfile;
 import net.pms.util.ParseException;
 
 /**

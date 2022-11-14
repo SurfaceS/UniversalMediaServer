@@ -16,6 +16,11 @@
  */
 package net.pms.dlna;
 
+import net.pms.dlna.virtual.CodeEnter;
+import net.pms.dlna.virtual.FolderLimit;
+import net.pms.dlna.virtual.SearchFolder;
+import net.pms.dlna.virtual.MediaMonitor;
+import net.pms.dlna.virtual.PlaylistFolder;
 import com.sun.jna.Platform;
 import java.io.*;
 import java.net.URI;

@@ -21,15 +21,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import net.pms.media.Media;
 import net.pms.network.HTTPResourceAuthenticator;
 import net.pms.util.FileUtil;
 
 public class WebStream extends DLNAResource {
-	@Override
-	public boolean isValid() {
-		resolveFormat();
-		return getFormat() != null;
-	}
 
 	private String url;
 	private String fluxName;
@@ -58,6 +54,12 @@ public class WebStream extends DLNAResource {
 	}
 
 	@Override
+	public boolean isValid() {
+		resolveFormat();
+		return getFormat() != null;
+	}
+
+	@Override
 	public String write() {
 		return fluxName + ">" + url + ">" + thumbURL + ">" + getSpecificType();
 	}
@@ -80,7 +82,7 @@ public class WebStream extends DLNAResource {
 
 	@Override
 	public long length() {
-		return DLNAMediaInfo.TRANS_SIZE;
+		return Media.TRANS_SIZE;
 	}
 
 	@Override

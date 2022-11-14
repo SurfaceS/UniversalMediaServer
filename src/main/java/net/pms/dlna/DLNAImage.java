@@ -22,7 +22,9 @@ import java.awt.image.ColorModel;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import net.pms.dlna.DLNAImageProfile.DLNAComplianceResult;
+import net.pms.dlna.protocolinfo.DLNAImageProfile;
+import net.pms.dlna.protocolinfo.DLNAImageProfile.DLNAComplianceResult;
+import net.pms.dlna.protocolinfo.DLNAProfileException;
 import net.pms.image.Image;
 import net.pms.image.ImageFormat;
 import net.pms.image.ImageInfo;
@@ -33,6 +35,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+//FIXME : refactor to media
 /**
  * This class is simply a byte array for holding an {@link ImageIO} supported
  * image with some additional metadata restricted to valid DLNA image media

@@ -25,7 +25,7 @@ import net.pms.PMS;
 import net.pms.database.MediaDatabase;
 import net.pms.database.MediaTableFilesStatus;
 import net.pms.dlna.DLNAResource;
-import net.pms.dlna.PlaylistFolder;
+import net.pms.dlna.virtual.PlaylistFolder;
 import net.pms.network.mediaserver.HTTPXMLHelper;
 import net.pms.network.mediaserver.handlers.SearchRequestHandler;
 import net.pms.network.mediaserver.jupnp.model.meta.UmsRemoteClientInfo;

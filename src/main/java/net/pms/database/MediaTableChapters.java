@@ -22,8 +22,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import net.pms.dlna.DLNAMediaChapter;
-import net.pms.dlna.DLNAMediaInfo;
+import net.pms.media.MediaChapter;
+import net.pms.media.Media;
 import net.pms.dlna.DLNAThumbnail;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -113,7 +113,7 @@ public class MediaTableChapters extends MediaTable {
 		);
 	}
 
-	protected static void insertOrUpdateChapters(Connection connection, long fileId, DLNAMediaInfo media) throws SQLException {
+	protected static void insertOrUpdateChapters(Connection connection, long fileId, Media media) throws SQLException {
 		if (connection == null || fileId < 0 || media == null || !media.hasChapters()) {
 			return;
 		}
@@ -134,7 +134,7 @@ public class MediaTableChapters extends MediaTable {
 				createDefaultValueForInsertStatement(columns)
 			);
 		) {
-			for (DLNAMediaChapter chapter : media.getChapters()) {
+			for (MediaChapter chapter : media.getChapters()) {
 				updateStatement.setLong(1, fileId);
 				updateStatement.setInt(2, chapter.getId());
 				updateStatement.setString(3, chapter.getLang());
@@ -161,8 +161,8 @@ public class MediaTableChapters extends MediaTable {
 		}
 	}
 
-	protected static List<DLNAMediaChapter> getChapters(Connection connection, long fileId) {
-		List<DLNAMediaChapter> result = new ArrayList<>();
+	protected static List<MediaChapter> getChapters(Connection connection, long fileId) {
+		List<MediaChapter> result = new ArrayList<>();
 		if (connection == null || fileId < 0) {
 			return result;
 		}
@@ -170,7 +170,7 @@ public class MediaTableChapters extends MediaTable {
 			stmt.setLong(1, fileId);
 			try (ResultSet elements = stmt.executeQuery()) {
 				while (elements.next()) {
-					DLNAMediaChapter chapter = new DLNAMediaChapter();
+					MediaChapter chapter = new MediaChapter();
 					chapter.setId(elements.getInt("ID"));
 					chapter.setLang(elements.getString("LANG"));
 					chapter.setTitle(elements.getString("TITLE"));

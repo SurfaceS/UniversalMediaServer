@@ -26,7 +26,6 @@ import java.nio.file.Files;
 import java.util.Locale;
 import net.pms.PMS;
 import net.pms.configuration.FormatConfiguration;
-import net.pms.dlna.DLNAMediaInfo;
 import net.pms.dlna.DLNAThumbnail;
 import net.pms.dlna.InputFile;
 import net.pms.encoders.DCRaw;
@@ -34,6 +33,7 @@ import net.pms.encoders.EngineFactory;
 import net.pms.image.ImageFormat;
 import net.pms.image.ImageInfo;
 import net.pms.image.ImagesUtil;
+import net.pms.media.Media;
 import net.pms.util.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +53,7 @@ public class RawImageParser {
 	 * @param lines The stderr output
 	 * @param input The FFmpeg input (-i) argument used
 	 */
-	public static void parse(DLNAMediaInfo media, InputFile file, int type) {
+	public static void parse(Media media, InputFile file, int type) {
 		try {
 			// Only parse using DCRaw if it is enabled
 			DCRaw dcraw = (DCRaw) EngineFactory.getActiveEngine(DCRaw.ID);

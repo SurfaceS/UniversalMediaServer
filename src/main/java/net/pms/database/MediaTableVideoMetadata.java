@@ -25,8 +25,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import net.pms.dlna.DLNAMediaInfo;
-import net.pms.dlna.DLNAMediaVideoMetadata;
+import net.pms.media.Media;
+import net.pms.media.MediaVideoMetadata;
 import net.pms.util.APIUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -188,15 +188,15 @@ public class MediaTableVideoMetadata extends MediaTable {
 	 *
 	 * @param connection the db connection
 	 * @param fileId the file id from FILES table.
-	 * @param media the {@link DLNAMediaInfo} VideoMetadata row to update.
+	 * @param media the {@link Media} VideoMetadata row to update.
 	 * @param apiExtendedMetadata JsonObject from metadata
 	 * @throws SQLException if an SQL error occurs during the operation.
 	 */
-	public static void insertOrUpdateVideoMetadata(final Connection connection, final Long fileId, final DLNAMediaInfo media, final JsonObject apiExtendedMetadata) throws SQLException {
+	public static void insertOrUpdateVideoMetadata(final Connection connection, final Long fileId, final Media media, final JsonObject apiExtendedMetadata) throws SQLException {
 		if (connection == null || fileId == null || media == null || !media.hasVideoMetadata()) {
 			return;
 		}
-		DLNAMediaVideoMetadata videoMetadata = media.getVideoMetadata();
+		MediaVideoMetadata videoMetadata = media.getVideoMetadata();
 		try (
 			PreparedStatement updateStatement = connection.prepareStatement(
 				apiExtendedMetadata != null ? SQL_GET_VIDEO_ALL_METADATA_BY_FILEID : SQL_GET_VIDEO_METADATA_BY_FILEID,
@@ -278,11 +278,11 @@ public class MediaTableVideoMetadata extends MediaTable {
 	 * @param connection the db connection
 	 * @param path the full path of the media.
 	 * @param modified the current {@code lastModified} value of the media file.
-	 * @param media the {@link DLNAMediaInfo} row to update.
+	 * @param media the {@link Media} row to update.
 	 * @param apiExtendedMetadata JsonObject from metadata
 	 * @throws SQLException if an SQL error occurs during the operation.
 	 */
-	public static void insertVideoMetadata(final Connection connection, String path, long modified, DLNAMediaInfo media, final JsonObject apiExtendedMetadata) throws SQLException {
+	public static void insertVideoMetadata(final Connection connection, String path, long modified, Media media, final JsonObject apiExtendedMetadata) throws SQLException {
 		if (StringUtils.isBlank(path)) {
 			LOGGER.warn("Couldn't write metadata for \"{}\" to the database because the media cannot be identified", path);
 			return;
@@ -310,7 +310,7 @@ public class MediaTableVideoMetadata extends MediaTable {
 		}
 	}
 
-	public static DLNAMediaVideoMetadata getVideoMetadataByFileId(Connection connection, long fileId) {
+	public static MediaVideoMetadata getVideoMetadataByFileId(Connection connection, long fileId) {
 		if (connection == null || fileId < 0) {
 			return null;
 		}
@@ -318,7 +318,7 @@ public class MediaTableVideoMetadata extends MediaTable {
 			selectStatement.setLong(1, fileId);
 			try (ResultSet rs = selectStatement.executeQuery()) {
 				if (rs.next()) {
-					DLNAMediaVideoMetadata videoMetadata = new DLNAMediaVideoMetadata();
+					MediaVideoMetadata videoMetadata = new MediaVideoMetadata();
 					videoMetadata.setIMDbID(rs.getString(COL_IMDBID));
 					videoMetadata.setYear(rs.getString(COL_MEDIA_YEAR));
 					videoMetadata.setMovieOrShowName(rs.getString(COL_MOVIEORSHOWNAME));
