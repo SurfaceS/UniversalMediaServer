@@ -61,9 +61,10 @@ public class MediaParser {
 				return;
 			}
 
+			boolean parseMediaInfo = renderer == null ? MediaInfoParser.isValid() : renderer.isUseMediaInfo();
 			// MediaInfo can't correctly parse ADPCM, DFF, DSF or PNM
 			if (
-				renderer.isUseMediaInfo() &&
+				parseMediaInfo &&
 				ext.getIdentifier() != Format.Identifier.ADPCM &&
 				ext.getIdentifier() != Format.Identifier.DFF &&
 				ext.getIdentifier() != Format.Identifier.DSF &&

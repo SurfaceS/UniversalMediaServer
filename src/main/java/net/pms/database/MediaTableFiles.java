@@ -41,6 +41,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import net.pms.configuration.sharedcontent.SharedContentConfiguration;
+import net.pms.formats.MPG;
+import net.pms.parsers.MediaParser;
 
 /**
  * This class provides methods for creating and maintaining the database where
@@ -53,7 +55,6 @@ public class MediaTableFiles extends MediaTable {
 	public static final String TABLE_NAME = "FILES";
 	public static final String COL_ID = "ID";
 	public static final String COL_THUMBID = "THUMBID";
-	public static final String COL_PARSED = "PARSED";
 	private static final String COL_BITRATE = "BITRATE";
 	private static final String COL_FRAMERATE = "FRAMERATE";
 	public static final String TABLE_COL_ID = TABLE_NAME + "." + COL_ID;
@@ -348,19 +349,17 @@ public class MediaTableFiles extends MediaTable {
 						LOGGER.trace(LOG_UPGRADED_TABLE, DATABASE_NAME, TABLE_NAME, currentVersion, version);
 					}
 					case 33 -> {
-						//ensure media is reparsed
-						executeUpdate(connection, "ALTER TABLE " + TABLE_NAME + " ADD COLUMN IF NOT EXISTS " + COL_PARSED + " BOOLEAN");
 						LOGGER.trace("Deleting index FORMAT_TYPE_WIDTH_HEIGHT");
 						executeUpdate(connection, "DROP INDEX IF EXISTS FORMAT_TYPE_WIDTH_HEIGHT");
 						//delete old columns
 						String[] columns = {
-							"WIDTH", "HEIGHT", "CODECV", "ASPECTRATIOCONTAINER", "ASPECTRATIOVIDEOTRACK", "REFRAMES", "AVCLEVEL", "MUXINGMODE",
+							"WIDTH", "HEIGHT", "CODECV", "ASPECTRATIOCONTAINER", "ASPECTRATIOVIDEOTRACK", "REFRAMES", "CODEC_LEVEL", "MUXINGMODE",
 							"FRAMERATEMODE", "MATRIXCOEFFICIENTS", "TITLEVIDEOTRACK", "BITDEPTH", "VIDEOTRACKCOUNT", "SCANTYPE", "SCANORDER"
 						};
+						//delete old columns
 						for (String column : columns)  {
 							executeUpdate(connection, "ALTER TABLE " + TABLE_NAME + " DROP COLUMN IF EXISTS " + column);
 						}
-						executeUpdate(connection, "DELETE FROM " + TABLE_NAME);
 					}
 					default -> {
 						// Do the dumb way
@@ -405,7 +404,6 @@ public class MediaTableFiles extends MediaTable {
 			sb.append(", THUMBID                 BIGINT");
 			sb.append(", CONTAINER               VARCHAR(").append(SIZE_CONTAINER).append(')');
 			sb.append(", TITLECONTAINER          VARCHAR(").append(SIZE_MAX).append(')');
-			sb.append(", PARSED                  BOOLEAN");
 			//all columns here are not file related but media related
 			sb.append(", DURATION                DOUBLE PRECISION");
 			sb.append(", FRAMERATE               VARCHAR(").append(SIZE_FRAMERATE).append(')');
@@ -522,8 +520,9 @@ public class MediaTableFiles extends MediaTable {
 			) {
 				if (rs.next()) {
 					int id = rs.getInt("ID");
+					int formatType = rs.getInt("FORMAT_TYPE");
 					media = new Media();
-					media.setMediaparsed(rs.getBoolean(COL_PARSED));
+					media.setMediaparsed(true);
 					media.setContainer(rs.getString("CONTAINER"));
 					media.setDuration(toDouble(rs, "DURATION"));
 					media.setBitrate(rs.getInt(COL_BITRATE));
@@ -590,6 +589,14 @@ public class MediaTableFiles extends MediaTable {
 							media.setLastPlaybackPosition(elements.getDouble("LASTPLAYBACKPOSITION"));
 						}
 					}
+					//reparse video data if missing
+					if (formatType == 4 && !media.hasVideo()) {
+						LOGGER.debug("Reparsing the video data for: " + name);
+						media.setMediaparsed(false);
+						InputFile file = new InputFile();
+						file.setFile(new File(name));
+						MediaParser.parse(media, file, new MPG(), formatType, null);
+					}
 				}
 			}
 		}
@@ -638,7 +645,7 @@ public class MediaTableFiles extends MediaTable {
 	 */
 	public static void insertOrUpdateData(final Connection connection, String name, long modified, int type, Media media) throws SQLException {
 		try {
-			String columns = "FILENAME, MODIFIED, FORMAT_TYPE, PARSED, DURATION, BITRATE, MEDIA_SIZE, FRAMERATE, " +
+			String columns = "FILENAME, MODIFIED, FORMAT_TYPE, DURATION, BITRATE, MEDIA_SIZE, FRAMERATE, " +
 				"ASPECTRATIODVD, IMAGEINFO, CONTAINER, STEREOSCOPY, TITLECONTAINER, IMAGECOUNT";
 
 			long fileId = -1;
@@ -659,7 +666,6 @@ public class MediaTableFiles extends MediaTable {
 						rs.updateTimestamp("MODIFIED", new Timestamp(modified));
 						rs.updateInt("FORMAT_TYPE", type);
 						if (media != null) {
-							rs.updateBoolean("PARSED", media.isMediaparsed());
 							if (media.getDuration() != null) {
 								rs.updateDouble("DURATION", media.getDurationInSeconds());
 							} else {
@@ -706,7 +712,6 @@ public class MediaTableFiles extends MediaTable {
 					ps.setTimestamp(++databaseColumnIterator, new Timestamp(modified));
 					ps.setInt(++databaseColumnIterator, type);
 					if (media != null) {
-						ps.setBoolean(++databaseColumnIterator, media.isMediaparsed());
 						if (media.getDuration() != null) {
 							ps.setDouble(++databaseColumnIterator, media.getDurationInSeconds());
 						} else {
