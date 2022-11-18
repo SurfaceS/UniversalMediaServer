@@ -22,7 +22,7 @@ import net.pms.database.MediaTableFiles;
 import net.pms.database.MediaTableFilesStatus;
 import net.pms.database.MediaTableRegexpRules;
 import net.pms.database.MediaTableVideoMetadata;
-import net.pms.database.MediaTableVideoTrackss;
+import net.pms.database.MediaTableVideoTracks;
 import net.pms.util.FullyPlayedAction;
 
 /**
@@ -54,8 +54,8 @@ public class MediaLibrary extends VirtualFolder {
 	private static final String AND_HAS_MEDIA_YEAR = " AND " + MediaTableVideoMetadata.TABLE_COL_MEDIA_YEAR + " != ''";
 	private static final String AND_HAS_NO_MEDIA_YEAR = " AND (" + MediaTableVideoMetadata.TABLE_COL_MEDIA_YEAR + " IS NULL OR " + MediaTableVideoMetadata.TABLE_COL_MEDIA_YEAR + " = '')";
 	private static final String AND_IS_MOVIE = AND_IS_NOT_TVEPISODE + AND_HAS_MEDIA_YEAR + " AND DURATION > " + FORTY_MINUTES_IN_SECONDS;
-	private static final String AND_IS_HD_VIDEO = " AND " + MediaTableFiles.TABLE_COL_ID + " IN (SELECT DISTINCT " + MediaTableVideoTrackss.TABLE_COL_FILEID + " FROM " + MediaTableVideoTrackss.TABLE_NAME + " WHERE " + MediaTableVideoTrackss.TABLE_COL_WIDTH + " > 864 AND " + MediaTableVideoTrackss.TABLE_COL_HEIGHT + " > 576)";
-	private static final String AND_IS_SD_VIDEO = " AND " + MediaTableFiles.TABLE_COL_ID + " IN (SELECT DISTINCT " + MediaTableVideoTrackss.TABLE_COL_FILEID + " FROM " + MediaTableVideoTrackss.TABLE_NAME + " WHERE " + MediaTableVideoTrackss.TABLE_COL_WIDTH + " <= 864 AND " + MediaTableVideoTrackss.TABLE_COL_HEIGHT + " <= 576)";
+	private static final String AND_IS_HD_VIDEO = " AND " + MediaTableFiles.TABLE_COL_ID + " IN (SELECT DISTINCT " + MediaTableVideoTracks.TABLE_COL_FILEID + " FROM " + MediaTableVideoTracks.TABLE_NAME + " WHERE " + MediaTableVideoTracks.TABLE_COL_WIDTH + " > 864 AND " + MediaTableVideoTracks.TABLE_COL_HEIGHT + " > 576)";
+	private static final String AND_IS_SD_VIDEO = " AND " + MediaTableFiles.TABLE_COL_ID + " IN (SELECT DISTINCT " + MediaTableVideoTracks.TABLE_COL_FILEID + " FROM " + MediaTableVideoTracks.TABLE_NAME + " WHERE " + MediaTableVideoTracks.TABLE_COL_WIDTH + " <= 864 AND " + MediaTableVideoTracks.TABLE_COL_HEIGHT + " <= 576)";
 	private static final String AND_IS_3D_VIDEO = " AND " + MediaTableFiles.TABLE_COL_STEREOSCOPY + " != ''";
 	private static final String AND_IS_NOT_3D_VIDEO = " AND " + MediaTableFiles.TABLE_COL_STEREOSCOPY + " = ''";
 

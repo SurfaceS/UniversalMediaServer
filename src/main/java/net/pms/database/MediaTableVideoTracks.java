@@ -39,8 +39,8 @@ import net.pms.media.MediaVideo.ScanType;
  * lookups, updates and inserts. All operations involving this table shall be
  * done with this class.
  */
-public class MediaTableVideoTrackss extends MediaTable {
-	private static final Logger LOGGER = LoggerFactory.getLogger(MediaTableVideoTrackss.class);
+public class MediaTableVideoTracks extends MediaTable {
+	private static final Logger LOGGER = LoggerFactory.getLogger(MediaTableVideoTracks.class);
 	public static final String TABLE_NAME = "VIDEOTRACKS";
 
 	private static final String COL_FILEID = "FILEID";

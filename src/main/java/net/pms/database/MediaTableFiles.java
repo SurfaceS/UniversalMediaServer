@@ -577,7 +577,7 @@ public class MediaTableFiles extends MediaTable {
 						}
 					}
 					media.setVideoMetadata(MediaTableVideoMetadata.getApiVideoMetadata(connection, id));
-					media.setVideoTracks(MediaTableVideoTrackss.getVideoTracks(connection, id));
+					media.setVideoTracks(MediaTableVideoTracks.getVideoTracks(connection, id));
 					media.setAudioTracks(MediaTableAudiotracks.getAudioTracks(connection, id));
 					media.setSubtitlesTracks(MediaTableSubtracks.getSubtitleTracks(connection, id));
 					media.setChapters(MediaTableChapters.getChapters(connection, id));
@@ -756,7 +756,7 @@ public class MediaTableFiles extends MediaTable {
 			}
 
 			if (media != null && fileId > -1) {
-				MediaTableVideoTrackss.insertOrUpdateVideoTracks(connection, fileId, media);
+				MediaTableVideoTracks.insertOrUpdateVideoTracks(connection, fileId, media);
 				MediaTableAudiotracks.insertOrUpdateAudioTracks(connection, fileId, media);
 				MediaTableSubtracks.insertOrUpdateSubtitleTracks(connection, fileId, media);
 				MediaTableChapters.insertOrUpdateChapters(connection, fileId, media);
