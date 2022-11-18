@@ -48,7 +48,7 @@ import net.pms.database.MediaDatabase;
 import net.pms.database.MediaTableFiles;
 import net.pms.formats.FormatFactory;
 import net.pms.media.Media;
-import net.pms.media.MediaVideoMetadata;
+import net.pms.media.metadata.MediaVideoMetadata;
 import net.pms.platform.windows.WindowsProgramPaths;
 import static net.pms.util.Constants.*;
 import net.pms.util.FilePermissions.FileFlag;

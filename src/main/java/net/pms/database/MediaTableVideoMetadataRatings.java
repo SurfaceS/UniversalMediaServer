@@ -24,7 +24,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import net.pms.media.metadata.ApiRatingSource;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -207,6 +210,27 @@ public final class MediaTableVideoMetadataRatings extends MediaTable {
 			LOGGER.error(LOG_ERROR_WHILE_IN_FOR, DATABASE_NAME, "writing", TABLE_NAME, fileId, e.getMessage());
 			LOGGER.trace("", e);
 		}
+	}
+
+	public static List<ApiRatingSource> getRatingsForFile(final Connection connection, final Long fileId) {
+		List<ApiRatingSource> result = new ArrayList<>();
+		try {
+			try (PreparedStatement ps = connection.prepareStatement(SQL_GET_RATING_FILEID)) {
+				ps.setLong(1, fileId);
+				try (ResultSet rs = ps.executeQuery()) {
+					while (rs.next()) {
+						ApiRatingSource source = new ApiRatingSource();
+						source.setSource(rs.getString(1));
+						source.setValue(rs.getString(2));
+						result.add(source);
+					}
+				}
+			}
+		} catch (SQLException e) {
+			LOGGER.error("Database error in " + TABLE_NAME + " for \"{}\": {}", fileId, e.getMessage());
+			LOGGER.trace("", e);
+		}
+		return result;
 	}
 
 	public static JsonArray getJsonArrayForFile(final Connection connection, final Long fileId) {

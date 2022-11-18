@@ -355,11 +355,12 @@ public class MediaTableFiles extends MediaTable {
 						//delete old columns
 						String[] columns = {
 							"WIDTH", "HEIGHT", "CODECV", "ASPECTRATIOCONTAINER", "ASPECTRATIOVIDEOTRACK", "REFRAMES", "AVCLEVEL", "MUXINGMODE",
-							"FRAMERATEMODE", "MATRIXCOEFFICIENTS", "TITLEVIDEOTRACK", "VIDEOTRACKCOUNT", "SCANTYPE", "SCANORDER"
+							"FRAMERATEMODE", "MATRIXCOEFFICIENTS", "TITLEVIDEOTRACK", "BITDEPTH", "VIDEOTRACKCOUNT", "SCANTYPE", "SCANORDER"
 						};
 						for (String column : columns)  {
 							executeUpdate(connection, "ALTER TABLE " + TABLE_NAME + " DROP COLUMN IF EXISTS " + column);
 						}
+						executeUpdate(connection, "DELETE FROM " + TABLE_NAME);
 					}
 					default -> {
 						// Do the dumb way
@@ -510,90 +511,87 @@ public class MediaTableFiles extends MediaTable {
 	 */
 	public static Media getData(final Connection connection, String name, long modified) throws IOException, SQLException {
 		Media media = null;
-		try {
+		try (
+			PreparedStatement stmt = connection.prepareStatement(SQL_GET_ALL_FILENAME_MODIFIED);
+		) {
+			stmt.setString(1, name);
+			stmt.setTimestamp(2, new Timestamp(modified));
 			try (
-				PreparedStatement stmt = connection.prepareStatement(SQL_GET_ALL_FILENAME_MODIFIED);
+				ResultSet rs = stmt.executeQuery();
+				PreparedStatement status = connection.prepareStatement("SELECT * FROM " + MediaTableFilesStatus.TABLE_NAME + " WHERE " + MediaTableFilesStatus.TABLE_COL_FILENAME + " = ? LIMIT 1");
 			) {
-				stmt.setString(1, name);
-				stmt.setTimestamp(2, new Timestamp(modified));
-				try (
-					ResultSet rs = stmt.executeQuery();
-					PreparedStatement status = connection.prepareStatement("SELECT * FROM " + MediaTableFilesStatus.TABLE_NAME + " WHERE " + MediaTableFilesStatus.TABLE_COL_FILENAME + " = ? LIMIT 1");
-				) {
-					if (rs.next()) {
-						int id = rs.getInt("ID");
-						media = new Media();
-						media.setMediaparsed(rs.getBoolean(COL_PARSED));
-						media.setContainer(rs.getString("CONTAINER"));
-						media.setDuration(toDouble(rs, "DURATION"));
-						media.setBitrate(rs.getInt(COL_BITRATE));
-						media.setFrameRate(rs.getString(COL_FRAMERATE));
-						media.setSize(rs.getLong("MEDIA_SIZE"));
-						media.setFileTitleFromMetadata(rs.getString("TITLECONTAINER"));
-						media.setStereoscopy(rs.getString("STEREOSCOPY"));
-						media.setAspectRatioDvdIso(rs.getString("ASPECTRATIODVD"));
-						media.setImageCount(rs.getInt("IMAGECOUNT"));
+				if (rs.next()) {
+					int id = rs.getInt("ID");
+					media = new Media();
+					media.setMediaparsed(rs.getBoolean(COL_PARSED));
+					media.setContainer(rs.getString("CONTAINER"));
+					media.setDuration(toDouble(rs, "DURATION"));
+					media.setBitrate(rs.getInt(COL_BITRATE));
+					media.setFrameRate(rs.getString(COL_FRAMERATE));
+					media.setSize(rs.getLong("MEDIA_SIZE"));
+					media.setFileTitleFromMetadata(rs.getString("TITLECONTAINER"));
+					media.setStereoscopy(rs.getString("STEREOSCOPY"));
+					media.setAspectRatioDvdIso(rs.getString("ASPECTRATIODVD"));
+					media.setImageCount(rs.getInt("IMAGECOUNT"));
+					try {
 						media.setImageInfo((ImageInfo) rs.getObject("IMAGEINFO"));
 						media.setThumb((DLNAThumbnail) rs.getObject("THUMBNAIL"));
+					} catch (SQLException se) {
+						if (se.getCause() instanceof InvalidClassException &&
+							se.toString().contains("net.pms.image.ExifInfo; local class incompatible")) {
+							/*
+							 * Serialization failed for ExifInfo or one of its subclasses,
+							 * this is unrecoverable so we need to remove it and allow it to
+							 * be regenerated.
+							 */
+							LOGGER.debug("Thumbnail for {} seems to be from a previous version, reparsing information", name);
+							LOGGER.trace("", se);
 
-						media.setVideoMetadata(MediaTableVideoMetadata.getVideoMetadataByFileId(connection, id));
-						media.setVideoTracks(MediaTableVideotracks.getVideoTracks(connection, id));
-						media.setAudioTracks(MediaTableAudiotracks.getAudioTracks(connection, id));
-						media.setSubtitlesTracks(MediaTableSubtracks.getSubtitleTracks(connection, id));
-						media.setChapters(MediaTableChapters.getChapters(connection, id));
-
-						status.setString(1, name);
-						try (ResultSet elements = status.executeQuery()) {
-							if (elements.next()) {
-								media.setPlaybackCount(elements.getInt("PLAYCOUNT"));
-								media.setLastPlaybackTime(elements.getString("DATELASTPLAY"));
-								media.setLastPlaybackPosition(elements.getDouble("LASTPLAYBACKPOSITION"));
+							// Regenerate the thumbnail from a stored poster if it exists
+							String posterURL = MediaTableVideoMetadataPosters.getByFilename(connection, name);
+							if (posterURL == null) {
+								LOGGER.debug("No poster URI was found locally for {}, we need to remove and reparse the file", name);
+								removeMediaEntry(connection, name, false);
+								connection.commit();
+								return null;
 							}
+
+							try {
+								byte[] image = URI_FILE_RETRIEVER.get(posterURL);
+								DLNAThumbnail thumbnail = (DLNAThumbnail) DLNAThumbnail.toThumbnail(image, 640, 480, ScaleType.MAX, ImageFormat.JPEG, false);
+								MediaTableThumbnails.setThumbnail(connection, thumbnail, name, -1, true);
+								return getData(connection, name, modified);
+							} catch (EOFException e2) {
+								LOGGER.debug(
+									"Error reading \"{}\" thumbnail from posters table: Unexpected end of stream, probably corrupt or read error.",
+									posterURL
+								);
+							} catch (UnknownFormatException e2) {
+								LOGGER.debug("Could not read \"{}\" thumbnail from posters table: {}", posterURL, e2.getMessage());
+							} catch (IOException e2) {
+								LOGGER.error("Error reading \"{}\" thumbnail from posters table: {}", posterURL, e2.getMessage());
+								LOGGER.trace("", e2);
+							}
+						} else {
+							throw se;
+						}
+					}
+					media.setVideoMetadata(MediaTableVideoMetadata.getApiVideoMetadata(connection, id));
+					media.setVideoTracks(MediaTableVideoTracks.getVideoTracks(connection, id));
+					media.setAudioTracks(MediaTableAudiotracks.getAudioTracks(connection, id));
+					media.setSubtitlesTracks(MediaTableSubtracks.getSubtitleTracks(connection, id));
+					media.setChapters(MediaTableChapters.getChapters(connection, id));
+
+					status.setString(1, name);
+					try (ResultSet elements = status.executeQuery()) {
+						if (elements.next()) {
+							media.setPlaybackCount(elements.getInt("PLAYCOUNT"));
+							media.setLastPlaybackTime(elements.getString("DATELASTPLAY"));
+							media.setLastPlaybackPosition(elements.getDouble("LASTPLAYBACKPOSITION"));
 						}
 					}
 				}
 			}
-		} catch (SQLException se) {
-			if (se.getCause() instanceof IOException iOException) {
-				if (se.getCause() instanceof InvalidClassException && se.toString().contains("net.pms.image.ExifInfo; local class incompatible")) {
-					/*
-					 * Serialization failed for ExifInfo or one of its subclasses,
-					 * this is unrecoverable so we need to remove it and allow it to
-					 * be regenerated.
-					 */
-					LOGGER.debug("Thumbnail for {} seems to be from a previous version, reparsing information", name);
-					LOGGER.trace("", se);
-
-					// Regenerate the thumbnail from a stored poster if it exists
-					String posterURL = MediaTableVideoMetadataPosters.getByFilename(connection, name);
-					if (posterURL == null) {
-						LOGGER.debug("No poster URI was found locally for {}, we need to remove and reparse the file", name);
-						removeMediaEntry(connection, name, false);
-						connection.commit();
-						return null;
-					}
-
-					try {
-						byte[] image = URI_FILE_RETRIEVER.get(posterURL);
-						DLNAThumbnail thumbnail = (DLNAThumbnail) DLNAThumbnail.toThumbnail(image, 640, 480, ScaleType.MAX, ImageFormat.JPEG, false);
-						MediaTableThumbnails.setThumbnail(connection, thumbnail, name, -1, true);
-						return getData(connection, name, modified);
-					} catch (EOFException e2) {
-						LOGGER.debug(
-							"Error reading \"{}\" thumbnail from posters table: Unexpected end of stream, probably corrupt or read error.",
-							posterURL
-						);
-					} catch (UnknownFormatException e2) {
-						LOGGER.debug("Could not read \"{}\" thumbnail from posters table: {}", posterURL, e2.getMessage());
-					} catch (IOException e2) {
-						LOGGER.error("Error reading \"{}\" thumbnail from posters table: {}", posterURL, e2.getMessage());
-						LOGGER.trace("", e2);
-					}
-				} else {
-					throw iOException;
-				}
-			}
-			throw se;
 		}
 		return media;
 	}
@@ -617,7 +615,7 @@ public class MediaTableFiles extends MediaTable {
 		Long id = getFileId(connection, name);
 		if (id != null) {
 			Media media = new Media();
-			media.setVideoMetadata(MediaTableVideoMetadata.getVideoMetadataByFileId(connection, id));
+			media.setVideoMetadata(MediaTableVideoMetadata.getApiVideoMetadata(connection, id));
 			media.setMediaparsed(true);
 			return media;
 		}
@@ -758,7 +756,7 @@ public class MediaTableFiles extends MediaTable {
 			}
 
 			if (media != null && fileId > -1) {
-				MediaTableVideotracks.insertOrUpdateVideoTracks(connection, fileId, media);
+				MediaTableVideoTracks.insertOrUpdateVideoTracks(connection, fileId, media);
 				MediaTableAudiotracks.insertOrUpdateAudioTracks(connection, fileId, media);
 				MediaTableSubtracks.insertOrUpdateSubtitleTracks(connection, fileId, media);
 				MediaTableChapters.insertOrUpdateChapters(connection, fileId, media);

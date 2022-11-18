@@ -30,7 +30,6 @@ import java.util.Set;
 import net.pms.database.MediaDatabase;
 import net.pms.database.MediaTableCoverArtArchive;
 import net.pms.database.MediaTableFiles;
-import net.pms.dlna.protocolinfo.DLNAImageProfile;
 import net.pms.dlna.virtual.SubSelFile;
 import net.pms.formats.Format;
 import net.pms.formats.FormatFactory;

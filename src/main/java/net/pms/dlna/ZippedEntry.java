@@ -16,7 +16,6 @@
  */
 package net.pms.dlna;
 
-import net.pms.dlna.protocolinfo.DLNAImageProfile;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;

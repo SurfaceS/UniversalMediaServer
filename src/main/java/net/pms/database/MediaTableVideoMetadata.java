@@ -26,7 +26,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import net.pms.media.Media;
-import net.pms.media.MediaVideoMetadata;
+import net.pms.media.metadata.MediaVideoMetadata;
 import net.pms.util.APIUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -359,6 +359,65 @@ public class MediaTableVideoMetadata extends MediaTable {
 	public static JsonObject getVideoMetadataAsJsonObject(final Connection connection, final String path) {
 		Long fileId = MediaTableFiles.getFileId(connection, path);
 		return getVideoMetadataAsJsonObject(connection, fileId);
+	}
+
+	public static MediaVideoMetadata getApiVideoMetadata(final Connection connection, final long fileId) {
+		if (connection == null || fileId < 0) {
+			return null;
+		}
+		boolean trace = LOGGER.isTraceEnabled();
+		try {
+			try (PreparedStatement selectStatement = connection.prepareStatement(SQL_GET_VIDEO_METADATA_BY_FILEID_IMDBID)) {
+				selectStatement.setLong(1, fileId);
+				if (trace) {
+					LOGGER.trace("Searching " + TABLE_NAME + " with \"{}\"", selectStatement);
+				}
+				try (ResultSet rs = selectStatement.executeQuery()) {
+					if (rs.next()) {
+						MediaVideoMetadata metadata = new MediaVideoMetadata();
+						metadata.setIMDbID(rs.getString(COL_IMDBID));
+						metadata.setYear(rs.getString(COL_MEDIA_YEAR));
+						metadata.setMovieOrShowName(rs.getString(COL_MOVIEORSHOWNAME));
+						metadata.setSimplifiedMovieOrShowName(rs.getString(COL_MOVIEORSHOWNAMESIMPLE));
+						metadata.setExtraInformation(rs.getString(COL_EXTRAINFORMATION));
+						metadata.setIsTVEpisode(rs.getBoolean(COL_ISTVEPISODE));
+						metadata.setTVSeason(rs.getString(COL_TVSEASON));
+						metadata.setTVEpisodeNumber(rs.getString(COL_TVEPISODENUMBER));
+						metadata.setTVEpisodeName(rs.getString(COL_TVEPISODENAME));
+						metadata.setActors(MediaTableVideoMetadataActors.getActorsForFile(connection, fileId));
+						metadata.setAward(MediaTableVideoMetadataAwards.getValueForFile(connection, fileId));
+						metadata.setBudget(rs.getLong(COL_BUDGET));
+						metadata.setCredits(rs.getString(COL_CREDITS));
+						metadata.setCountries(MediaTableVideoMetadataCountries.getCountriesForFile(connection, fileId));
+						metadata.setDirectors(MediaTableVideoMetadataDirectors.getDirectorsForFile(connection, fileId));
+						metadata.setExternalIDs(rs.getString(COL_EXTERNALIDS));
+						metadata.setGenres(MediaTableVideoMetadataGenres.getGenresForFile(connection, fileId));
+						metadata.setHomepage(rs.getString(COL_HOMEPAGE));
+						metadata.setImages(rs.getString(COL_IMAGES));
+						metadata.setImdbRating(MediaTableVideoMetadataIMDbRating.getValueForFile(connection, fileId));
+						metadata.setOriginalLanguage(rs.getString(COL_ORIGINALLANGUAGE));
+						metadata.setOriginalTitle(rs.getString(COL_ORIGINALTITLE));
+						metadata.setPoster(MediaTableVideoMetadataPosters.getValueForFile(connection, fileId));
+						metadata.setProduction(MediaTableVideoMetadataProduction.getValueForFile(connection, fileId));
+						metadata.setProductionCompanies(rs.getString(COL_PRODUCTIONCOMPANIES));
+						metadata.setProductionCountries(rs.getString(COL_PRODUCTIONCOUNTRIES));
+						metadata.setRated(MediaTableVideoMetadataRated.getValueForFile(connection, fileId));
+						metadata.setRatings(MediaTableVideoMetadataRatings.getRatingsForFile(connection, fileId));
+						metadata.setReleased(MediaTableVideoMetadataReleased.getValueForFile(connection, fileId));
+						metadata.setRevenue(rs.getLong(COL_REVENUE));
+						if (metadata.isTVEpisode() && StringUtils.isNotBlank(metadata.getMovieOrShowName())) {
+							metadata.setSerieMetadata(MediaTableTVSeries.getTvSerieMetadata(connection, metadata.getMovieOrShowName()));
+						}
+						return metadata;
+					}
+				}
+			}
+		} catch (SQLException e) {
+			LOGGER.error("Database error in " + TABLE_NAME + " for \"{}\": {}", fileId, e.getMessage());
+			LOGGER.trace("", e);
+		}
+
+		return null;
 	}
 
 	public static JsonObject getVideoMetadataAsJsonObject(final Connection connection, final Long fileId) {

@@ -64,7 +64,7 @@ import net.pms.gui.GuiManager;
 import net.pms.image.ImageFormat;
 import net.pms.image.ImagesUtil.ScaleType;
 import net.pms.media.Media;
-import net.pms.media.MediaVideoMetadata;
+import net.pms.media.metadata.MediaVideoMetadata;
 import static net.pms.util.FileUtil.indexOf;
 import net.pms.util.OpenSubtitle.OpenSubtitlesBackgroundWorkerThreadFactory;
 import org.apache.commons.lang3.StringUtils;

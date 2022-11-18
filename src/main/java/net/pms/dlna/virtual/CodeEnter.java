@@ -19,7 +19,7 @@ package net.pms.dlna.virtual;
 import net.pms.Messages;
 import net.pms.PMS;
 import net.pms.dlna.DLNAResource;
-import net.pms.dlna.protocolinfo.DLNAImageProfile;
+import net.pms.dlna.DLNAImageProfile;
 
 public class CodeEnter extends VirtualFolder {
 	private final DLNAResource resource;

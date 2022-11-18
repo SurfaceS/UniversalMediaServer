@@ -33,7 +33,7 @@ import com.drew.metadata.photoshop.PsdHeaderDirectory;
 import com.drew.metadata.png.PngDirectory;
 import com.drew.metadata.webp.WebpDirectory;
 import net.pms.configuration.FormatConfiguration;
-import net.pms.dlna.protocolinfo.DLNAImageProfile;
+import net.pms.dlna.DLNAImageProfile;
 import net.pms.image.ExifInfo.ExifCompression;
 
 /**

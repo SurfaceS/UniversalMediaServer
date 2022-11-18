@@ -16,7 +16,6 @@
  */
 package net.pms.dlna;
 
-import net.pms.dlna.protocolinfo.DLNAImageProfile;
 import java.io.*;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;

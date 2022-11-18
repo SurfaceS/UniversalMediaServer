@@ -19,7 +19,6 @@ package net.pms.dlna;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import net.pms.dlna.protocolinfo.DLNAImageProfile;
 import net.pms.image.ImageFormat;
 import net.pms.image.ImageInfo;
 import net.pms.image.ImagesUtil.ScaleType;

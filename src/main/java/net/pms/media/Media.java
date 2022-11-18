@@ -16,6 +16,7 @@
  */
 package net.pms.media;
 
+import net.pms.media.metadata.MediaVideoMetadata;
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
 import java.io.*;
@@ -1933,6 +1934,7 @@ public class Media implements Cloneable {
 				}
 			}
 
+			//TODO : check if api have thumb
 			if (ffmpegParsing) {
 				if (!thumbOnly || (type == Format.VIDEO && !CONFIGURATION.isUseMplayerForVideoThumbs())) {
 					pw = getFFmpegThumbnail(inputFile, resume);

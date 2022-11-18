@@ -14,7 +14,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package net.pms.dlna.protocolinfo;
+package net.pms.dlna;
 
 import java.awt.Dimension;
 import java.io.Serializable;
@@ -26,6 +26,10 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import net.pms.dlna.protocolinfo.DLNAOrgProfileName;
+import net.pms.dlna.protocolinfo.KnownDLNAOrgProfileName;
+import net.pms.dlna.protocolinfo.MimeType;
+import net.pms.dlna.protocolinfo.ProtocolInfo;
 import org.jupnp.support.model.Protocol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +46,7 @@ import net.pms.image.PNGInfo;
 import net.pms.image.ExifInfo.ExifColorSpace;
 import net.pms.image.PNGInfo.InterlaceMethod;
 
-//FIXME : refactor as it is not dlna related
+//FIXME : refactor as protocolinfo (breaking db object change)
 /**
  * Definition and validation of the different DLNA media profiles for images.
  * If more are added, corresponding changes need to be made in

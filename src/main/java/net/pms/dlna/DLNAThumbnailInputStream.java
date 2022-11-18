@@ -21,7 +21,6 @@ import java.awt.color.ColorSpace;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import net.pms.dlna.protocolinfo.DLNAImageProfile;
 import net.pms.dlna.protocolinfo.DLNAProfileException;
 import net.pms.image.BufferedImageFilterChain;
 import net.pms.image.ColorSpaceType;

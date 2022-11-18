@@ -28,6 +28,7 @@ import java.sql.Types;
 import net.pms.dlna.DLNAThumbnail;
 import net.pms.image.ImageFormat;
 import net.pms.image.ImagesUtil.ScaleType;
+import net.pms.media.metadata.TvSerieMetadata;
 import net.pms.util.APIUtils;
 import net.pms.util.FileUtil;
 import net.pms.util.UnknownFormatException;
@@ -895,4 +896,62 @@ public final class MediaTableTVSeries extends MediaTable {
 		return true;
 	}
 
+	public static TvSerieMetadata getTvSerieMetadata(final Connection connection, final String title) {
+		if (connection == null || title == null) {
+			return null;
+		}
+		String simplifiedTitle = FileUtil.getSimplifiedShowName(title);
+		boolean trace = LOGGER.isTraceEnabled();
+		try {
+			try (PreparedStatement selectStatement = connection.prepareStatement(SQL_GET_BY_SIMPLIFIEDTITLE)) {
+				selectStatement.setString(1, simplifiedTitle);
+				if (trace) {
+					LOGGER.trace("Searching " + TABLE_NAME + " with \"{}\"", selectStatement);
+				}
+				try (ResultSet rs = selectStatement.executeQuery()) {
+					if (rs.next()) {
+						TvSerieMetadata metadata = new TvSerieMetadata();
+						metadata.setCreatedBy(rs.getString("CREATEDBY"));
+						metadata.setCredits(rs.getString("CREDITS"));
+						metadata.setEndYear(rs.getString("ENDYEAR"));
+						metadata.setIMDbID(rs.getString(COL_IMDBID));
+						metadata.setPlot(rs.getString("PLOT"));
+						metadata.setSimplifiedTitle(rs.getString("SIMPLIFIEDTITLE"));
+						metadata.setStartYear(rs.getString("STARTYEAR"));
+						metadata.setTitle(rs.getString("TITLE"));
+						metadata.setTotalSeasons(rs.getDouble("TOTALSEASONS"));
+						metadata.setVotes(rs.getString("VOTES"));
+						metadata.setVersion(rs.getString("VERSION"));
+						metadata.setCredits(rs.getString("CREDITS"));
+						metadata.setExternalIDs(rs.getString("EXTERNALIDS"));
+						metadata.setFirstAirDate(rs.getString("FIRSTAIRDATE"));
+						metadata.setHomepage(rs.getString("HOMEPAGE"));
+						metadata.setImages(rs.getString(COL_IMAGES));
+						metadata.setInProduction(rs.getBoolean("INPRODUCTION"));
+						metadata.setLanguages(rs.getString("LANGUAGES"));
+						metadata.setLastAirDate(rs.getString("LASTAIRDATE"));
+						metadata.setNetworks(rs.getString("NETWORKS"));
+						metadata.setNumberOfEpisodes(rs.getDouble("NUMBEROFEPISODES"));
+						metadata.setNumberOfSeasons(rs.getDouble("NUMBEROFSEASONS"));
+						metadata.setOriginalLanguage(rs.getString("ORIGINALLANGUAGE"));
+						metadata.setOriginalTitle(rs.getString("ORIGINALTITLE"));
+						metadata.setOriginCountry(rs.getString("ORIGINCOUNTRY"));
+						metadata.setProductionCompanies(rs.getString("PRODUCTIONCOMPANIES"));
+						metadata.setProductionCountries(rs.getString("PRODUCTIONCOUNTRIES"));
+						metadata.setSeasons(rs.getString("SEASONS"));
+						metadata.setSeriesType(rs.getString("SERIESTYPE"));
+						metadata.setSpokenLanguages(rs.getString("SPOKENLANGUAGES"));
+						metadata.setStatus(rs.getString("SPOKENLANGUAGES"));
+						metadata.setTagline(rs.getString("TAGLINE"));
+						return metadata;
+					}
+				}
+			}
+		} catch (SQLException e) {
+			LOGGER.error("Database error in " + TABLE_NAME + " for \"{}\": {}", title, e.getMessage());
+			LOGGER.trace("", e);
+		}
+
+		return null;
+	}
 }

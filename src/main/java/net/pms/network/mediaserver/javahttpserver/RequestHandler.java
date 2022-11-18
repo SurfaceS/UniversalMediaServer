@@ -62,7 +62,7 @@ import net.pms.dlna.DLNAThumbnailInputStream;
 import net.pms.dlna.DbIdMediaType;
 import net.pms.dlna.DbIdResourceLocator;
 import net.pms.dlna.RealFile;
-import net.pms.dlna.protocolinfo.DLNAImageProfile;
+import net.pms.dlna.DLNAImageProfile;
 import net.pms.dlna.protocolinfo.PanasonicDmpProfiles;
 import net.pms.dlna.virtual.MediaLibraryFolder;
 import net.pms.dlna.virtual.PlaylistFolder;

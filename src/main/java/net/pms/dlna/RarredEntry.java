@@ -16,7 +16,6 @@
  */
 package net.pms.dlna;
 
-import net.pms.dlna.protocolinfo.DLNAImageProfile;
 import com.github.junrar.Archive;
 import com.github.junrar.exception.RarException;
 import com.github.junrar.rarfile.FileHeader;

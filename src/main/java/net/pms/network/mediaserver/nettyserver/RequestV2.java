@@ -50,7 +50,7 @@ import net.pms.configuration.UmsConfiguration;
 import net.pms.database.MediaDatabase;
 import net.pms.database.MediaTableFilesStatus;
 import net.pms.dlna.DLNAImageInputStream;
-import net.pms.dlna.protocolinfo.DLNAImageProfile;
+import net.pms.dlna.DLNAImageProfile;
 import net.pms.media.DLNAMediaOnDemandSubtitle;
 import net.pms.dlna.DLNAResource;
 import net.pms.dlna.DLNAThumbnailInputStream;
