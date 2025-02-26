@@ -81,6 +81,9 @@ jobs:
         with:
           path: ums-testserver.jar
           key: compiled-server-binary
+      - name: Enable corepack
+        working-directory: ./react-client
+        run: corepack enable
       - name: Install dependencies
         working-directory: ./react-client
         run: corepack yarn install
