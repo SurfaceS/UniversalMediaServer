@@ -83,7 +83,7 @@ jobs:
           key: compiled-server-binary
       - name: Install dependencies
         working-directory: ./react-client
-        run: yarn
+        run: corepack yarn install
       - name: Install Playwright with dependencies
         working-directory: ./react-client
         run: yarn playwright install --with-deps
