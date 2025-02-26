@@ -86,7 +86,7 @@ jobs:
         run: corepack enable
       - name: Install dependencies
         working-directory: ./react-client
-        run: corepack yarn install
+        run: yarn install
       - name: Install Playwright with dependencies
         working-directory: ./react-client
         run: yarn playwright install --with-deps
